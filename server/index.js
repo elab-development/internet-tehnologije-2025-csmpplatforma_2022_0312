@@ -2,6 +2,13 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+const db = require('./config/db');
+
+// Test konekcije
+db.getConnection()
+  .then(() => console.log("Uspešno povezano na MySQL bazu (port 3307)!"))
+  .catch(err => console.log("Greška pri povezivanju na bazu: ", err));
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
