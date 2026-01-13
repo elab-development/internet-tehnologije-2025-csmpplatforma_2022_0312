@@ -16,6 +16,12 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+const studentRoutes = require('./routes/StudentRoutes');
+app.use('/api/student', studentRoutes);
+
+const ocenaRoutes = require('./routes/OcenaRoutes');
+app.use('/api/ocena',ocenaRoutes);
+
 // Osnovna ruta (da proverimo da li radi)
 app.get('/', (req, res) => {
     res.send('CSMP Backend Server uspesno pokrenut!');
@@ -24,3 +30,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server radi na portu: ${PORT}`);
 });
+
