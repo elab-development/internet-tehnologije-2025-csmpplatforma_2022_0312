@@ -19,6 +19,12 @@ app.use(express.json());
 const nastavnikRoutes = require('./routes/NastavnikRoutes');
 app.use('/api/nastavnik', nastavnikRoutes);
 
+const sadrzajRoutes = require('./routes/SadrzajRoutes');
+app.use('/api/sadrzaj', sadrzajRoutes);
+
+const grupaRoutes = require('./routes/GrupaRoutes');
+app.use('/api/grupa', grupaRoutes);
+
 const studentRoutes = require('./routes/StudentRoutes');
 app.use('/api/student', studentRoutes);
 
