@@ -16,6 +16,9 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+const nastavnikRoutes = require('./routes/NastavnikRoutes');
+app.use('/api/nastavnik', nastavnikRoutes);
+
 const studentRoutes = require('./routes/StudentRoutes');
 app.use('/api/student', studentRoutes);
 
