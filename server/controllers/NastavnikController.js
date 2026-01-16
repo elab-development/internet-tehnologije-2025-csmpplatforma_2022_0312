@@ -45,3 +45,69 @@ exports.deleteNastavnik = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+exports.getNastavnici = async (req, res) => {
+    const { ime, prezime } = req.query; // parametri iz Query taba
+
+    try {
+        let query = `
+            SELECT nastavnikID, ime, prezime, username, adminID 
+            FROM nastavnik 
+            WHERE 1=1
+        `;
+        let params = [];
+
+        if (ime) {
+            query += ' AND ime LIKE ?';
+            params.push(`%${ime}%`);
+        }
+
+        if (prezime) {
+            query += ' AND prezime LIKE ?';
+            params.push(`%${prezime}%`);
+        }
+
+        const [rows] = await db.query(query, params);
+        res.status(200).json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+exports.loginNastavnik = async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        // 1. Provera da li nastavnik postoji u bazi
+        const [rows] = await db.query(
+            'SELECT * FROM nastavnik WHERE username = ?',
+            [username]
+        );
+
+        if (rows.length === 0) {
+            return res.status(401).json({ message: "Pogrešan username ili password!" });
+        }
+
+        const nastavnik = rows[0];
+
+        // 2. Upoređivanje hešovane lozinke
+        const isMatch = await bcrypt.compare(password, nastavnik.password);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: "Pogrešan username ili password!" });
+        }
+
+        // 3. Uspešna prijava - vraćamo podatke nastavnika
+        res.status(200).json({
+            message: "Uspešna prijava kao nastavnik!",
+            nastavnik: {
+                nastavnikID: nastavnik.nastavnikID,
+                ime: nastavnik.ime,
+                prezime: nastavnik.prezime,
+                username: nastavnik.username,
+                adminID: nastavnik.adminID
+            }
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

@@ -68,3 +68,45 @@ exports.getStudenti = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+exports.loginStudent = async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        // Provera da li student postoji
+        const [rows] = await db.query(
+            'SELECT * FROM student WHERE username = ?',
+            [username]
+        );
+
+        if (rows.length === 0) {
+            return res.status(401).json({ message: "Pogrešan username" });
+        }
+
+        const student = rows[0];
+        console.log("Lozinka koju si uneo u Postman/Body:", password);
+        console.log("Lozinka koja je stigla iz baze:", student.password);
+
+        // Provera lozinke
+        const isMatch = await bcrypt.compare(password, student.password);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: "Pogresan password!" });
+        }
+
+        // Uspešna prijava (bez tokena, jednostavno – za rad)
+        res.status(200).json({
+            message: "Uspešna prijava!",
+            student: {
+                studentID: student.studentID,
+                ime: student.ime,
+                prezime: student.prezime,
+                username: student.username,
+                adminID: student.adminID,
+                grupaID: student.grupaID
+            }
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
