@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3307
--- Generation Time: Jan 13, 2026 at 03:03 PM
+-- Generation Time: Jan 14, 2026 at 06:18 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -32,6 +32,14 @@ CREATE TABLE `administrator` (
   `ime` varchar(100) NOT NULL,
   `kod` varchar(15) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `administrator`
+--
+
+INSERT INTO `administrator` (`adminID`, `ime`, `kod`) VALUES
+(1, 'pera', 'pera123'),
+(2, 'kiza', 'kiza123');
 
 -- --------------------------------------------------------
 
@@ -62,6 +70,13 @@ CREATE TABLE `nastavnik` (
   `adminID` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `nastavnik`
+--
+
+INSERT INTO `nastavnik` (`nastavnikID`, `ime`, `prezime`, `username`, `password`, `adminID`) VALUES
+(1, 'Marko', 'Marković', 'marko_profa', '$2b$10$5yAtROq4', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -73,6 +88,13 @@ CREATE TABLE `ocena` (
   `vrednost` int(11) NOT NULL,
   `komentar` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `ocena`
+--
+
+INSERT INTO `ocena` (`ocenaID`, `vrednost`, `komentar`) VALUES
+(1, 10, 'Odlično odrađen projekat, sve radi.');
 
 -- --------------------------------------------------------
 
@@ -202,7 +224,7 @@ ALTER TABLE `student`
 -- AUTO_INCREMENT for table `administrator`
 --
 ALTER TABLE `administrator`
-  MODIFY `adminID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `adminID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `grupa`
@@ -214,13 +236,13 @@ ALTER TABLE `grupa`
 -- AUTO_INCREMENT for table `nastavnik`
 --
 ALTER TABLE `nastavnik`
-  MODIFY `nastavnikID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `nastavnikID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `ocena`
 --
 ALTER TABLE `ocena`
-  MODIFY `ocenaID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ocenaID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `predaja`

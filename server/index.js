@@ -22,6 +22,21 @@ app.use('/api/student', studentRoutes);
 const ocenaRoutes = require('./routes/OcenaRoutes');
 app.use('/api/ocena',ocenaRoutes);
 
+const nastavnikRoutes = require('./routes/NastavnikRoutes');
+app.use('/api/nastavnik', nastavnikRoutes);
+
+const sadrzajRoutes = require('./routes/SadrzajRoutes');
+app.use('/api/sadrzaj', sadrzajRoutes);
+
+const grupaRoutes = require('./routes/GrupaRoutes');
+app.use('/api/grupa', grupaRoutes);
+
+const predajaRoutes = require('./routes/PredajaRoutes');
+app.use('/api/predaja', predajaRoutes);
+
+const projekatRoutes = require('./routes/ProjekatRoutes');
+app.use('/api/projekat', projekatRoutes);
+
 // Osnovna ruta (da proverimo da li radi)
 app.get('/', (req, res) => {
     res.send('CSMP Backend Server uspesno pokrenut!');
