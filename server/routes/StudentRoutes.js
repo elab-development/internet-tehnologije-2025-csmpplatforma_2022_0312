@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const studentController = require('../controllers/StudentController');
+const verifyToken = require('../middleware/auth');
 
 router.post('/register', studentController.registerStudent);
-router.delete('/delete/:id', studentController.deleteStudent);
 router.get('/select', studentController.getStudenti);
 router.post('/login', studentController.loginStudent);
+
+router.delete('/delete/:id', verifyToken ,studentController.deleteStudent);
 
 module.exports = router;

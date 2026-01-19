@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 exports.registerStudent = async (req, res) => {
     const { ime, prezime, username, password, adminID, grupaID } = req.body;
@@ -83,8 +84,7 @@ exports.loginStudent = async (req, res) => {
         }
 
         const student = rows[0];
-        console.log("Lozinka koju si uneo u Postman/Body:", password);
-        console.log("Lozinka koja je stigla iz baze:", student.password);
+        
 
         // Provera lozinke
         const isMatch = await bcrypt.compare(password, student.password);
@@ -93,9 +93,13 @@ exports.loginStudent = async (req, res) => {
             return res.status(401).json({ message: "Pogresan password!" });
         }
 
+        const token = jwt.sign(
+        { id: student.studentID, role: 'student' }, 'tajni_kljuc',  { expiresIn: '7h' } );
+
         // Uspešna prijava (bez tokena, jednostavno – za rad)
         res.status(200).json({
             message: "Uspešna prijava!",
+            token : token,
             student: {
                 studentID: student.studentID,
                 ime: student.ime,

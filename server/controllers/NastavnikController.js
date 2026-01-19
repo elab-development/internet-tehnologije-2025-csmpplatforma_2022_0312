@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 exports.registerNastavnik = async (req, res) => {
     const { ime, prezime, username, password, adminID } = req.body;
@@ -95,9 +96,13 @@ exports.loginNastavnik = async (req, res) => {
             return res.status(401).json({ message: "Pogrešan username ili password!" });
         }
 
+        const token = jwt.sign(
+        { id: nastavnik.nastavnikID, role: 'nastavnik' }, 'tajni_kljuc',  { expiresIn: '7h' } );
+
         // 3. Uspešna prijava - vraćamo podatke nastavnika
         res.status(200).json({
             message: "Uspešna prijava kao nastavnik!",
+            token: token,
             nastavnik: {
                 nastavnikID: nastavnik.nastavnikID,
                 ime: nastavnik.ime,
