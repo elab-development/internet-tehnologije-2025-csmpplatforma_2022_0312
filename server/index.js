@@ -38,6 +38,9 @@ app.use('/api/predaja', predajaRoutes);
 const projekatRoutes = require('./routes/ProjekatRoutes');
 app.use('/api/projekat', projekatRoutes);
 
+const authRoutes = require('./routes/AuthRoutes');
+app.use('/api/auth', authRoutes);
+
 // Osnovna ruta (da proverimo da li radi)
 app.get('/', (req, res) => {
     res.send('CSMP Backend Server uspesno pokrenut!');

@@ -5,7 +5,6 @@ const verifyToken = require('../middleware/auth');
 
 router.post('/register', studentController.registerStudent);
 router.get('/select', studentController.getStudenti);
-router.post('/login', studentController.loginStudent);
 
 router.delete('/delete/:id', verifyToken ,studentController.deleteStudent);
 
