@@ -6,10 +6,10 @@ exports.registerStudent = async (req, res) => {
     const { ime, prezime, username, password, adminID, grupaID } = req.body;
 
     try {
-        // Enkripcija lozinke (zahtev za bezbednost)
+        
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Upis u tvoju tabelu student
+        
         await db.query(
             'INSERT INTO student (ime, prezime, username, password, adminID,grupaID) VALUES ( ?, ?, ?, ?, ?,?)',
             [ime, prezime, username, hashedPassword, adminID,grupaID]
@@ -24,7 +24,7 @@ exports.deleteStudent = async (req, res) => {
     const { id } = req.params;
 
     try {
-        // Pokušavamo da obrišemo samo studenta
+        
         const [result] = await db.query(
             'DELETE FROM student WHERE studentID = ?',
             [id]
@@ -36,7 +36,7 @@ exports.deleteStudent = async (req, res) => {
 
         res.status(200).json({ message: "Student je uspešno obrisan!" });
     } catch (err) {
-        // Ako student ima povezane radove, upadamo ovde
+        
         if (err.code === 'ER_ROW_IS_REFERENCED_2') {
             return res.status(400).json({ 
                 error: "Nije moguće obrisati studenta jer ima povezane projekte ili predaje." 
@@ -47,8 +47,7 @@ exports.deleteStudent = async (req, res) => {
 };
 
 exports.getStudenti = async (req, res) => {
-    const { ime, prezime } = req.query; // Uzimamo parametre iz Query taba u Thunder Client-u
-
+    const { ime, prezime } = req.query; 
     try {
         let query = 'SELECT studentID, ime, prezime, username, adminID, grupaID FROM student WHERE 1=1';
         let params = [];

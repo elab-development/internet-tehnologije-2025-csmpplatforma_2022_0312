@@ -10,6 +10,7 @@ const AdminHome = () => {
 
     const handleLogout = () => {
         localStorage.removeItem('token');
+        alert("Dovidjenja!");
         navigate('/login');
     };
 
@@ -17,8 +18,8 @@ const AdminHome = () => {
         const fetchData = async () => {
             try {
                 const token = localStorage.getItem('token');
-                // Koristimo ispravan standard sa Bearer prefiksom
-                const config = { headers: { Authorization: `Bearer ${token}` } };
+                
+                const config = { headers: { Authorization: token } };
                 
                 const resStudenti = await axios.get('http://localhost:5000/api/student/select', config);
                 const resNastavnici = await axios.get('http://localhost:5000/api/nastavnik/select', config);
@@ -34,7 +35,7 @@ const AdminHome = () => {
     }, [navigate]);
 
     const obrisiKorisnika = async (tip, id) => {
-        // Provera da ID nije undefined pre slanja zahteva
+        
         if (!id) return alert("Greška: ID nije pronađen!");
 
         if (window.confirm(`Da li ste sigurni da želite brisanje?`)) {
@@ -44,7 +45,7 @@ const AdminHome = () => {
                     headers: { Authorization: token }
                 });
 
-                // Ažuriranje stanja na osnovu studentID/nastavnikID iz baze
+                
                 if (tip === 'student') {
                     setStudenti(prev => prev.filter(s => s.studentID !== id));
                 } else {
@@ -64,12 +65,19 @@ const AdminHome = () => {
             padding: '20px', boxSizing: 'border-box' 
         }}>
             <div style={{ width: '90%', maxWidth: '1200px' }}>
-                {/* Header deo sa naslovom i dugmićima */}
+                
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                    <h1 style={{ margin: 0, color: '#1a1a1a' }}>Admin Dashboard</h1>
+                    <h1 style={{ margin: 0, color: '#1a1a1a' }}>Glavna stranica</h1>
                     <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                         <div style={{ transform: 'scale(0.8)', transformOrigin: 'right' }}>
-                            <CustomButton text="+ Registruj Novog" onClick={() => navigate('/register')} color="#28a745" />
+                            <CustomButton text="+ Registruj Novog Studenta" onClick={() => navigate('/register')} color="#28a745" />
+                        </div>
+                        <div style={{ transform: 'scale(0.8)', transformOrigin: 'right' }}>
+                            <CustomButton 
+                                text="+ Registruj Novog Nastavnika" 
+                                onClick={() => navigate('/registerN')} 
+                                color="#17a2b8" 
+                            />
                         </div>
                         <button 
                             onClick={handleLogout}
@@ -83,10 +91,10 @@ const AdminHome = () => {
                     </div>
                 </div>
 
-                {/* Tabele u dve kolone - tvoj originalni stil */}
+                
                 <div style={{ display: 'flex', gap: '30px', justifyContent: 'center' }}>
                     
-                    {/* Tabela Studenti */}
+                    
                     <div style={{ flex: 1, backgroundColor: 'white', padding: '25px', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
                         <h3 style={{ borderBottom: '2px solid #4681d8', paddingBottom: '10px' }}>Studenti</h3>
                         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
@@ -116,7 +124,7 @@ const AdminHome = () => {
                         </table>
                     </div>
 
-                    {/* Tabela Nastavnici */}
+                    
                     <div style={{ flex: 1, backgroundColor: 'white', padding: '25px', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
                         <h3 style={{ borderBottom: '2px solid #4681d8', paddingBottom: '10px' }}>Nastavnici</h3>
                         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>

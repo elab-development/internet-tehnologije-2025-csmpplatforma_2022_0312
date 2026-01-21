@@ -26,13 +26,13 @@ exports.getSadrzaj = async (req, res) => {
         
         let params = [];
 
-        // Ako je poslat naziv
+        
         if (naziv) {
             query += ' AND naziv LIKE ?';
             params.push(`%${naziv}%`);
         }
 
-        // Ako je poslat tip (npr. Zadatak)
+        
         if (tip) {
             query += ' AND tip = ?';
             params.push(tip);

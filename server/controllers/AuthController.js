@@ -6,7 +6,7 @@ exports.universalLogin = async (req, res) => {
     const { username, password, kod } = req.body;
 
     try {
-        // 1. SCENARIO: Admin pokušava da se uloguje (popunio je samo polje 'kod')
+        
         if (kod && !username) {
             const [adminRows] = await db.query(
                 'SELECT * FROM administrator WHERE kod = ?',

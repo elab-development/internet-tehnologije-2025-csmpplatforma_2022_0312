@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const db = require('./config/db');
 
-// Test konekcije
+
 db.getConnection()
   .then(() => console.log("Uspešno povezano na MySQL bazu (port 3307)!"))
   .catch(err => console.log("Greška pri povezivanju na bazu: ", err));
@@ -12,7 +12,7 @@ db.getConnection()
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+
 app.use(cors());
 app.use(express.json());
 
@@ -41,7 +41,7 @@ app.use('/api/projekat', projekatRoutes);
 const authRoutes = require('./routes/AuthRoutes');
 app.use('/api/auth', authRoutes);
 
-// Osnovna ruta (da proverimo da li radi)
+
 app.get('/', (req, res) => {
     res.send('CSMP Backend Server uspesno pokrenut!');
 });

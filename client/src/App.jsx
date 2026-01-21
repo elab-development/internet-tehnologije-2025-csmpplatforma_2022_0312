@@ -3,23 +3,32 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminHome from './pages/AdminHome';
+import RegistracijaN from './pages/RegistracijaN';
+import CreateProject from './pages/CreateProject';
+import Home from './pages/Home';
 
 function App() {
   return (
     <Router>
       <div className="App">
         <Routes>
-          {/* Kada korisnik ode na /login, prikaži Login komponentu */}
+          
           <Route path="/login" element={<Login />} />
           
-          {/* Kada korisnik ode na /register, prikaži Register komponentu */}
+          
           <Route path="/register" element={<Register />} />
 
-          {/* Ako neko uđe na običan localhost:5173, automatski ga pošalji na /login */}
+          
           <Route path="/" element={<Navigate to="/login" />} />
           
-          {/* Ovde ćemo kasnije dodati Dashboard stranicu */}
+          
           <Route path="/AdminHome" element={<AdminHome />} />
+
+          <Route path="/registerN" element={<RegistracijaN />} />
+
+          <Route path="/create-project" element={<CreateProject />} />
+
+          <Route path="/home" element={<Home />} />
         </Routes>
       </div>
     </Router>

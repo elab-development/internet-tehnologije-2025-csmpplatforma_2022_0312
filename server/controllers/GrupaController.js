@@ -16,9 +16,9 @@ exports.createGrupa = async (req, res) => {
 };
 exports.updateGrupa = async (req, res) => {
     const { id } = req.params;
-    const updates = req.body; // Uzimamo sve što je poslato
+    const updates = req.body; 
 
-    // Dinamički pravimo SQL upit
+    
     const keys = Object.keys(updates);
     if (keys.length === 0) {
         return res.status(400).json({ message: "Nema podataka za izmenu" });
@@ -46,19 +46,19 @@ exports.updateGrupa = async (req, res) => {
 
 
 exports.getGrupe = async (req, res) => {
-    const { naziv, godina } = req.query; // Parametri iz Thunder Client Query taba
+    const { naziv, godina } = req.query; 
 
     try {
         let query = 'SELECT * FROM grupa WHERE 1=1';
         let params = [];
 
-        // Filtriranje po nazivu (koristimo LIKE za delimičnu pretragu)
+        
         if (naziv) {
             query += ' AND naziv LIKE ?';
             params.push(`%${naziv}%`);
         }
 
-        // Filtriranje po godini (precizno podudaranje)
+        
         if (godina) {
             query += ' AND godina = ?';
             params.push(godina);

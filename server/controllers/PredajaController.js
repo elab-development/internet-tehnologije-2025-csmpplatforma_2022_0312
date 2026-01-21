@@ -1,7 +1,7 @@
 const db = require('../config/db');
 
 exports.createPredaja = async (req, res) => {
-    // ocenaID može biti null ako rad još nije pregledan
+    
     const { studentID, sadrzajID, ocenaID } = req.body;
 
     try {

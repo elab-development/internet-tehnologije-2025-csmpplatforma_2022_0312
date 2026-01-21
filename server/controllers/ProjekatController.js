@@ -4,7 +4,7 @@ exports.createProjekat = async (req, res) => {
     const { naziv, opis, studentID } = req.body;
 
     try {
-        // Upis u tabelu projekat
+        
         await db.query(
             'INSERT INTO projekat (naziv, opis, studentID) VALUES (?, ?, ?)',
             [naziv, opis, studentID]
@@ -16,7 +16,7 @@ exports.createProjekat = async (req, res) => {
     }
 };
 exports.deleteProjekat = async (req, res) => {
-    const { id } = req.params; // Uzimamo ID iz URL-a (npr. /api/projekat/5)
+    const { id } = req.params; 
 
     try {
         const [result] = await db.query(
@@ -35,17 +35,17 @@ exports.deleteProjekat = async (req, res) => {
 };
 exports.updateProjekat = async (req, res) => {
     const { id } = req.params;
-    const updates = req.body; // npr. { "naziv": "Novi Naslov" }
+    const updates = req.body; 
 
-    // Izvlačimo ključeve iz body-ja (npr. ["naziv"])
+    
     const keys = Object.keys(updates);
     
-    // Ako je body prazan, ne radimo ništa
+    
     if (keys.length === 0) {
         return res.status(400).json({ message: "Nema podataka za izmenu" });
     }
 
-    // Pravimo SQL deo: "naziv = ?, opis = ?"
+    
     const setQuery = keys.map(key => `${key} = ?`).join(', ');
     const values = Object.values(updates);
 
@@ -60,6 +60,35 @@ exports.updateProjekat = async (req, res) => {
         }
 
         res.status(200).json({ message: "Projekat uspešno izmenjen!" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+exports.getProjekti = async (req, res) => {
+    
+    const studentID = req.params.id || req.query.studentID;
+    console.log("Backend primio ID:", studentID); 
+
+    try {
+        let query;
+        let params = [];
+
+        if (studentID) {
+            
+            query = 'SELECT * FROM projekat WHERE studentID = ?';
+            params = [studentID];
+        } else {
+            
+            query = `
+                SELECT p.*, s.ime, s.prezime 
+                FROM projekat p 
+                JOIN student s ON p.studentID = s.studentID
+            `;
+        }
+
+        const [results] = await db.query(query, params);
+        console.log("Rezultat iz baze:", results); 
+        res.status(200).json(results);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -13,7 +13,7 @@ exports.createOcena = async (req, res) => {
     }
 };
 exports.getOcene = async (req, res) => {
-    const { vrednost, komentar } = req.query; // Query parametri
+    const { vrednost, komentar } = req.query; 
 
     try {
         let query = `

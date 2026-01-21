@@ -20,6 +20,7 @@ const Login = () => {
         
         console.log("Odgovor sa servera:", res.data);
         localStorage.setItem('token', res.data.token);
+        localStorage.setItem('user', JSON.stringify(res.data.user));
         alert(res.data.message);
 
         // POPRAVKA: Čitamo role iz res.data.user
@@ -57,7 +58,7 @@ const Login = () => {
             textAlign: 'center'
         }}>
             <h1 style={{ marginBottom: '40px', color: '#1a1a1a', fontSize: '32px' }}>
-                Prijava na CSM platformu
+                Prijava na CSMP platformu
             </h1>
             
             <form onSubmit={handleLogin}>
