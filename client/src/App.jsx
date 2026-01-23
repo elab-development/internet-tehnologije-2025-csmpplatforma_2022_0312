@@ -6,6 +6,7 @@ import AdminHome from './pages/AdminHome';
 import RegistracijaN from './pages/RegistracijaN';
 import CreateProject from './pages/CreateProject';
 import Home from './pages/Home';
+import TestStranica from './pages/TestStranica';
 
 function App() {
   return (
@@ -29,6 +30,8 @@ function App() {
           <Route path="/create-project" element={<CreateProject />} />
 
           <Route path="/home" element={<Home />} />
+
+          <Route path="/test/:sadrzajID" element={<TestStranica />} />
         </Routes>
       </div>
     </Router>

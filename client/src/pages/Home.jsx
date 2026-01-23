@@ -60,93 +60,97 @@ const Home = () => {
     
 
     return (
-        <div style={layoutStyle}>
-            
-            <aside style={sidebarStyle}>
-                <h2 style={sidebarTitleStyle}>
+    <div style={layoutStyle}>
+        
+        <aside style={sidebarStyle}>
+            <h2 style={sidebarTitleStyle}>
                 {isStudent ? "Moji projekti" : "Studentski projekti"}
-                </h2>
-                
-                {isStudent && (
+            </h2>
+            
+            {isStudent && (
                 <button onClick={() => navigate('/create-project')} style={newProjectButtonStyle}>
-                + Novi projekat
+                    + Novi projekat
                 </button>
-                )}
+            )}
 
-                <div style={projectListContainer}>
+            <div style={projectListContainer}>
                 {projekti.length > 0 ? projekti.map(p => (
-                <div key={p.projekatID} style={sidebarProjectItem}>
-                <span style={projectNameStyle}>{p.naziv}</span>
-                
-                {isStudent && (
-                    <button onClick={() => obrisiProjekat(p.projekatID)} style={deleteLinkStyle}>
-                        Obriši
-                    </button>
+                    <div key={p.projekatID} style={sidebarProjectItem}>
+                        <span style={projectNameStyle}>{p.naziv}</span>
+                        
+                        {isStudent && (
+                            <button onClick={() => obrisiProjekat(p.projekatID)} style={deleteLinkStyle}>
+                                Obriši
+                            </button>
+                        )}
+                    </div>
+                )) : (
+                    <p style={{color: '#999', fontSize: '14px'}}>
+                        {isStudent ? "Nemaš kreiranih projekata." : "Trenutno nema studentskih projekata."}
+                    </p>
                 )}
             </div>
-        )) : (
-            <p style={{color: '#999', fontSize: '14px'}}>
-                {isStudent ? "Nemaš kreiranih projekata." : "Trenutno nema studentskih projekata."}
-            </p>
-        )}
+        </aside>
+
+        <main style={mainContentStyle}>
+            <header style={headerWrapperStyle}>
+                <div style={welcomeTextStyle}>
+                    <h1 style={{ margin: 0, fontSize: '32px', color: '#1a202c' }}>Dobrodošli, {user?.ime}</h1>
+                    <p style={{ color: '#718096', fontSize: '18px', marginTop: '8px' }}>
+                        Uloga: <span style={{fontWeight: '600', color: '#4681d8'}}>{isStudent ? 'Student' : 'Nastavnik'}</span>
+                    </p>
+                </div>
+                <button 
+                    onClick={() => { localStorage.clear(); window.location.href='/login'; }}
+                    style={logoutButtonStyle}
+                >
+                    Odjavi se
+                </button>
+            </header>
+
+            <section style={wideContentCardStyle}>
+                <div style={cardHeaderStyle}>
+                    <h3 style={{ margin: 0, color: '#2d3748' }}>
+                        {isStudent ? 'Aktivni zadaci i nastavni materijali' : 'Pregled svih sadržaja'}
+                    </h3>
+                </div>
+
+                <div style={tableHeaderStyle}>
+                    <span style={{ flex: 2 }}>NAZIV PREDMETA</span>
+                    {/* Kolona TIP sada zauzima više mesta jer nema Akcije */}
+                    <span style={{ flex: 2, textAlign: 'center' }}>TIP {isStudent && "TESTA"}</span>
+                </div>
+
+                {sadrzaji.length > 0 ? sadrzaji.map(s => (
+                    <div key={s.sadrzajID} style={contentRowStyle}>
+                        <div style={{ flex: 2, display: 'flex', alignItems: 'center' }}>
+                            <div style={bulletStyle}></div>
+                            <span style={{ fontWeight: '500', color: '#4a5568' }}>{s.naziv}</span>
+                        </div>
+                        
+                        {/* TIP je sada klikabilan samo za studente */}
+                        <div style={{ flex: 2, textAlign: 'center' }}>
+                            <span 
+                                onClick={() => isStudent && navigate(`/test/${s.sadrzajID}`)}
+                                style={{
+                                    ...typeBadgeStyle, 
+                                    cursor: isStudent ? 'pointer' : 'default',
+                                    border: isStudent ? '1px solid #3182ce' : 'none'
+                                }}
+                            >
+                                {s.tip}
+                            </span>
+                        </div>
+                    </div>
+                )) : (
+                    <div style={{ padding: '40px', textAlign: 'center', color: '#a0aec0' }}>
+                        Trenutno nema dostupnih zadataka.
+                    </div>
+                )}
+            </section>
+        </main>
     </div>
-</aside>
-
-            
-            <main style={mainContentStyle}>
-                <header style={headerWrapperStyle}>
-                    <div style={welcomeTextStyle}>
-                        <h1 style={{ margin: 0, fontSize: '32px', color: '#1a202c' }}>Dobrodošli, {user?.ime}</h1>
-                        <p style={{ color: '#718096', fontSize: '18px', marginTop: '8px' }}>
-                            Uloga: <span style={{fontWeight: '600', color: '#4681d8'}}>{isStudent ? 'Student' : 'Nastavnik'}</span>
-                        </p>
-                    </div>
-                    <button 
-                        onClick={() => { localStorage.clear(); window.location.href='/login'; }}
-                        style={logoutButtonStyle}
-                    >
-                        Odjavi se
-                    </button>
-                </header>
-
-                
-                <section style={wideContentCardStyle}>
-                    <div style={cardHeaderStyle}>
-                        <h3 style={{ margin: 0, color: '#2d3748' }}>
-                            {isStudent ? 'Aktivni zadaci i nastavni materijali' : 'Pregled svih sadržaja'}
-                        </h3>
-                    </div>
-
-                    <div style={tableHeaderStyle}>
-                        <span style={{ flex: 2 }}>NAZIV AKTIVNOSTI</span>
-                        <span style={{ flex: 1, textAlign: 'center' }}>TIP</span>
-                        <span style={{ flex: 1, textAlign: 'right' }}>AKCIJA</span>
-                    </div>
-
-                    {sadrzaji.length > 0 ? sadrzaji.map(s => (
-                        <div key={s.sadrzajID} style={contentRowStyle}>
-                            <div style={{ flex: 2, display: 'flex', alignItems: 'center' }}>
-                                <div style={bulletStyle}></div>
-                                <span style={{ fontWeight: '500', color: '#4a5568' }}>{s.naziv}</span>
-                            </div>
-                            <div style={{ flex: 1, textAlign: 'center' }}>
-                                <span style={typeBadgeStyle}>{s.tip}</span>
-                            </div>
-                            <div style={{ flex: 1, textAlign: 'right' }}>
-                                <button style={actionButtonStyle}>
-                                    {isStudent ? 'Predaj rad' : 'Pregledaj'}
-                                </button>
-                            </div>
-                        </div>
-                    )) : (
-                        <div style={{ padding: '40px', textAlign: 'center', color: '#a0aec0' }}>
-                            Trenutno nema dostupnih zadataka.
-                        </div>
-                    )}
-                </section>
-            </main>
-        </div>
-    );
+);
 };
 
 

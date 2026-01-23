@@ -4,10 +4,14 @@ exports.createPredaja = async (req, res) => {
     const { studentID, sadrzajID, sadrzajRada } = req.body;
 
     try { 
-        const [result] = await db.query(
-            'INSERT INTO predaja (studentID, sadrzajID, sadrzajRada, datumPredaje, ocenaID) VALUES (?, ?, ?, NOW(), NULL)',
-            [studentID, sadrzajID, sadrzajRada]
-        );
+        // Sada imamo 3 kolone (studentID, sadrzajID, sadrzajRada) 
+        // i tačno 3 vrednosti (?, ?, ?)
+        // datumPredaje se automatski puni sa NOW()
+        const query = `
+            INSERT INTO predaja (studentID, sadrzajID, sadrzajRada, datumPredaje) 
+            VALUES (?, ?, ?, NOW())`;
+
+        const [result] = await db.query(query, [studentID, sadrzajID, sadrzajRada]);
 
         res.status(201).json({ 
             message: "Predaja uspešno zabeležena!",
