@@ -9,27 +9,33 @@ const Home = () => {
     const navigate = useNavigate();
 
     const fetchData = async () => {
-        const currentID = user?.studentID || user?.id;
-        if (!user || !currentID) return;
+    if (!user) return;
 
-        try {
-            const token = localStorage.getItem('token');
-            const config = { headers: { Authorization: token } };
-            const isStudent = user.studentID || user.role === 'student';
+    console.log("Trenutni user objekat iz konzole:", user);
+    
+    const isStudentUser = user.studentID !== undefined && user.studentID !== null; 
+    const token = localStorage.getItem('token');
+    const config = { headers: { Authorization: token } };
 
-            const projekatUrl = isStudent 
-                ? `http://localhost:5000/api/projekat/${currentID}` 
-                : `http://localhost:5000/api/projekat`;
+    try {
+        
+        const currentID = user.studentID;
 
-            const resProjekti = await axios.get(projekatUrl, config);
-            setProjekti(resProjekti.data);
-            
-            const resSadrzaj = await axios.get('http://localhost:5000/api/sadrzaj/select', config);
-            setSadrzaji(resSadrzaj.data);
-        } catch (err) {
-            console.error("Greška pri učitavanju podataka:", err);
-        }
-    };
+        const projekatUrl = isStudentUser 
+            ? `http://localhost:5000/api/projekat/${currentID}` 
+            : `http://localhost:5000/api/projekat`;
+
+        console.log("Finalni URL koji šaljem:", projekatUrl);
+
+        const resProjekti = await axios.get(projekatUrl, config);
+        setProjekti(resProjekti.data);
+        
+        const resSadrzaj = await axios.get('http://localhost:5000/api/sadrzaj/select', config);
+        setSadrzaji(resSadrzaj.data);
+    } catch (err) {
+        console.error("Greška pri učitavanju podataka:", err);
+    }
+};
 
     useEffect(() => {
         fetchData();
@@ -51,29 +57,40 @@ const Home = () => {
 
     const isStudent = user?.studentID || user?.role === 'student';
 
+    
+
     return (
         <div style={layoutStyle}>
             
             <aside style={sidebarStyle}>
-                <h2 style={sidebarTitleStyle}>Moji projekti</h2>
+                <h2 style={sidebarTitleStyle}>
+                {isStudent ? "Moji projekti" : "Studentski projekti"}
+                </h2>
                 
                 {isStudent && (
-                    <button onClick={() => navigate('/create-project')} style={newProjectButtonStyle}>
-                        + Novi projekat
-                    </button>
+                <button onClick={() => navigate('/create-project')} style={newProjectButtonStyle}>
+                + Novi projekat
+                </button>
                 )}
 
                 <div style={projectListContainer}>
-                    {projekti.length > 0 ? projekti.map(p => (
-                        <div key={p.projekatID} style={sidebarProjectItem}>
-                            <span style={projectNameStyle}>{p.naziv}</span>
-                            <button onClick={() => obrisiProjekat(p.projekatID)} style={deleteLinkStyle}>
-                                Obriši
-                            </button>
-                        </div>
-                    )) : <p style={{color: '#999', fontSize: '14px'}}>Nema projekata.</p>}
-                </div>
-            </aside>
+                {projekti.length > 0 ? projekti.map(p => (
+                <div key={p.projekatID} style={sidebarProjectItem}>
+                <span style={projectNameStyle}>{p.naziv}</span>
+                
+                {isStudent && (
+                    <button onClick={() => obrisiProjekat(p.projekatID)} style={deleteLinkStyle}>
+                        Obriši
+                    </button>
+                )}
+            </div>
+        )) : (
+            <p style={{color: '#999', fontSize: '14px'}}>
+                {isStudent ? "Nemaš kreiranih projekata." : "Trenutno nema studentskih projekata."}
+            </p>
+        )}
+    </div>
+</aside>
 
             
             <main style={mainContentStyle}>
@@ -81,7 +98,7 @@ const Home = () => {
                     <div style={welcomeTextStyle}>
                         <h1 style={{ margin: 0, fontSize: '32px', color: '#1a202c' }}>Dobrodošli, {user?.ime}</h1>
                         <p style={{ color: '#718096', fontSize: '18px', marginTop: '8px' }}>
-                            Uloga: <span style={{fontWeight: '600', color: '#4681d8'}}>{isStudent ? 'Student' : 'Administrator'}</span>
+                            Uloga: <span style={{fontWeight: '600', color: '#4681d8'}}>{isStudent ? 'Student' : 'Nastavnik'}</span>
                         </p>
                     </div>
                     <button 
@@ -181,11 +198,12 @@ const deleteLinkStyle = { background: 'none', border: 'none', color: '#e53e3e', 
 
 const mainContentStyle = { 
     flex: 1, 
-    padding: '60px 80px', 
-    maxWidth: '1400px',   
-    margin: '0 auto'      
+    padding: '60px 40px', 
+    backgroundColor: '#f7fafc',
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh'
 };
-
 const headerWrapperStyle = { 
     display: 'flex', 
     justifyContent: 'space-between', 
@@ -208,9 +226,10 @@ const logoutButtonStyle = {
 const wideContentCardStyle = { 
     backgroundColor: '#ffffff', 
     borderRadius: '16px', 
-    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
     overflow: 'hidden',
-    width: '100%' 
+    width: '100%',   
+    marginTop: '20px'
 };
 
 const cardHeaderStyle = { padding: '24px 32px', borderBottom: '1px solid #edf2f7', backgroundColor: '#fff' };
@@ -252,7 +271,7 @@ const actionButtonStyle = {
     padding: '10px 24px', 
     borderRadius: '8px', 
     cursor: 'pointer', 
-    fontWeight: '600'
+    fontWeight: '60'
 };
 
 export default Home;

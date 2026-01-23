@@ -5,7 +5,7 @@ import InputField from '../components/InputField';
 import CustomButton from '../components/CustomButton';
 
 const Register = () => {
-    // 1. Dodat grupaID u početni state
+    
     const [userData, setUserData] = useState({ 
         ime: '', 
         prezime: '', 
@@ -16,9 +16,6 @@ const Register = () => {
     
     const navigate = useNavigate();
 
-    
-    
-
     const handleChange = (e) => {
         setUserData({ ...userData, [e.target.name]: e.target.value });
     };
@@ -27,12 +24,10 @@ const Register = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            const admin = JSON.parse(localStorage.getItem('user')); // Dobijamo adminID
-
-            // Sklapamo finalni objekat za backend
+            const admin = JSON.parse(localStorage.getItem('user'));  
             const finalData = { 
                 ...userData, 
-                adminID: admin.id // Automatski dodeljujemo ID admina koji kreira
+                adminID: admin.id 
             };
 
             await axios.post('http://localhost:5000/api/student/register', finalData, {
@@ -63,10 +58,7 @@ const Register = () => {
                         <InputField label="Ime" name="ime" value={userData.ime} onChange={handleChange} placeholder="Ime studenta" />
                         <InputField label="Prezime" name="prezime" value={userData.prezime} onChange={handleChange} placeholder="Prezime studenta" />
                         <InputField label="Korisničko ime" name="username" value={userData.username} onChange={handleChange} placeholder="Username" />
-                        <InputField label="Lozinka" type="password" name="password" value={userData.password} onChange={handleChange} placeholder="Lozinka" />
-                        
-                        {/* 3. COMBOBOX ZA GRUPE */}
-                        
+                        <InputField label="Lozinka" type="password" name="password" value={userData.password} onChange={handleChange} placeholder="Lozinka" />  
                     </div>
                     
                     <div style={{ marginTop: '40px' }}>

@@ -1,17 +1,20 @@
 const db = require('../config/db');
 
 exports.createPredaja = async (req, res) => {
-    
-    const { studentID, sadrzajID, ocenaID } = req.body;
+    const { studentID, sadrzajID, sadrzajRada } = req.body;
 
-    try {
-        await db.query(
-            'INSERT INTO predaja (studentID, sadrzajID, datumPredaje, ocenaID) VALUES (?, ?, NOW(), ?)',
-            [studentID, sadrzajID, ocenaID === null ? null:ocenaID]
+    try { 
+        const [result] = await db.query(
+            'INSERT INTO predaja (studentID, sadrzajID, sadrzajRada, datumPredaje, ocenaID) VALUES (?, ?, ?, NOW(), NULL)',
+            [studentID, sadrzajID, sadrzajRada]
         );
 
-        res.status(201).json({ message: "Predaja uspešno zabeležena!" });
+        res.status(201).json({ 
+            message: "Predaja uspešno zabeležena!",
+            predajaID: result.insertId 
+        });
     } catch (err) {
+        console.error("Greška na backendu pri predaji:", err);
         res.status(500).json({ error: err.message });
     }
 };

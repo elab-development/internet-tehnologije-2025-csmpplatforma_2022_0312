@@ -64,32 +64,36 @@ exports.updateProjekat = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+
 exports.getProjekti = async (req, res) => {
+    // Proveravamo ID iz parametara rute (/api/projekat/:id)
+    const sID = req.params.id;
     
-    const studentID = req.params.id || req.query.studentID;
-    console.log("Backend primio ID:", studentID); 
+    console.log("Backend primio ID:", sID); 
 
     try {
         let query;
         let params = [];
 
-        if (studentID) {
-            
+        // Proveravamo da li je sID zapravo broj ili validan string, a ne 'undefined'
+        if (sID && sID !== 'undefined') {
+            // Logika za studenta - vidi samo svoje
             query = 'SELECT * FROM projekat WHERE studentID = ?';
-            params = [studentID];
+            params = [sID];
         } else {
-            
+            // Logika za nastavnika - vidi sve projekte i ko ih je radio
             query = `
                 SELECT p.*, s.ime, s.prezime 
                 FROM projekat p 
-                JOIN student s ON p.studentID = s.studentID
+                LEFT JOIN student s ON p.studentID = s.studentID
             `;
         }
 
         const [results] = await db.query(query, params);
-        console.log("Rezultat iz baze:", results); 
         res.status(200).json(results);
     } catch (err) {
+        console.error("SQL Greška:", err);
         res.status(500).json({ error: err.message });
     }
 };
