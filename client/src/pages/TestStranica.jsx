@@ -14,20 +14,16 @@ const TestStranica = () => {
         const fetchTest = async () => {
             try {
                 const token = localStorage.getItem('token');
-                // Šaljemo id kao query parametar jer ga kontroler tako očekuje
                 const res = await axios.get(`http://localhost:5000/api/sadrzaj/select?id=${sadrzajID}`, {
                     headers: { Authorization: token }
                 });
                 
-                console.log("Podaci sa servera:", res.data);
-
-                // Rešavamo problem niza: ako server vrati [ {...} ], uzimamo prvi element
                 const podaci = Array.isArray(res.data) ? res.data[0] : res.data;
 
                 if (podaci) {
                     setTest(podaci);
 
-                    // Obrada pitanja iz baze: delimo tekst po brojevima (1. , 2. ...)
+                    
                     if (podaci.pitanje) {
                         const delovi = podaci.pitanje.split(/(?=\d+\.\s+)/).filter(p => p.trim() !== "");
                         setPitanjaLista(delovi);
@@ -54,29 +50,30 @@ const TestStranica = () => {
     };
 
     const handlePredaj = async () => {
-        // Spajanje pitanja i odgovora u string za bazu
-        const finalniSadrzajRada = pitanjaLista.map((p, i) => 
-            `${p.trim()}\nODGOVOR: ${odgovoriPoPitanjima[i]}`
-        ).join('\n\n');
+    
+    const numerisaniOdgovori = pitanjaLista.map((_, index) => {
+        const odgovor = odgovoriPoPitanjima[index] || ""; 
+        return `${index + 1}. ${odgovor.trim()}`; 
+    }).join('\n'); 
 
-        try {
-            const token = localStorage.getItem('token');
-            const podaciZaSlanje = {
-                studentID: user.studentID,
-                sadrzajID: sadrzajID,
-                sadrzajRada: finalniSadrzajRada
-            };
+    try {
+        const token = localStorage.getItem('token');
+        const podaciZaSlanje = {
+            studentID: user.studentID,
+            sadrzajID: sadrzajID,
+            sadrzajRada: numerisaniOdgovori 
+        };
 
-            await axios.post('http://localhost:5000/api/predaja/submit', podaciZaSlanje, {
-                headers: { Authorization: token }
-            });
+        await axios.post('http://localhost:5000/api/predaja/submit', podaciZaSlanje, {
+            headers: { Authorization: token }
+        });
 
-            alert("Uspešno predat rad!");
-            navigate('/home');
-        } catch (err) {
-            alert("Greška pri predaji rada.");
-        }
-    };
+        alert("Uspešno predat rad!");
+        navigate('/home');
+    } catch (err) {
+        alert("Greška pri predaji rada.");
+    }
+};
 
     if (!test) {
         return <div style={{padding: '50px', textAlign: 'center'}}>Učitavanje podataka iz baze...</div>;
