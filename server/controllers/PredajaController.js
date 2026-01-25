@@ -55,3 +55,24 @@ exports.updateOcena = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+exports.getStudentPredaje = async (req, res) => {
+    const { studentID } = req.params;
+    try {
+        const query = `
+            SELECT 
+                p.predajaID, p.sadrzajRada, p.datumPredaje,
+                sd.naziv AS vrstaTesta,
+                o.vrednost AS ocenaVrednost,
+                o.komentar AS ocenaKomentar
+            FROM predaja p
+            JOIN sadrzaj sd ON p.sadrzajID = sd.sadrzajID
+            LEFT JOIN ocena o ON p.ocenaID = o.ocenaID
+            WHERE p.studentID = ?
+            ORDER BY p.datumPredaje DESC`;
+
+        const [rows] = await db.query(query, [studentID]);
+        res.status(200).json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

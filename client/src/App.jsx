@@ -7,6 +7,7 @@ import RegistracijaN from './pages/RegistracijaN';
 import CreateProject from './pages/CreateProject';
 import Home from './pages/Home';
 import TestStranica from './pages/TestStranica';
+import MojiRadovi from './pages/MojiRadovi';
 
 function App() {
   return (
@@ -32,6 +33,8 @@ function App() {
           <Route path="/home" element={<Home />} />
 
           <Route path="/test/:sadrzajID" element={<TestStranica />} />
+
+          <Route path="/moji-radovi" element={<MojiRadovi />} />
         </Routes>
       </div>
     </Router>

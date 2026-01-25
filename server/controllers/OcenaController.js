@@ -1,13 +1,17 @@
 const db = require('../config/db');
 
 exports.createOcena = async (req, res) => {
-    const {vrednost, komentar } = req.body;
+    const { vrednost, komentar } = req.body;
     try {
-        await db.query(
+        const [result] = await db.query(
             'INSERT INTO ocena (vrednost, komentar) VALUES (?, ?)',
             [vrednost, komentar]
         );
-        res.status(201).json({ message: "Ocena uspešno kreirana!" });
+        
+        res.status(201).json({ 
+            message: "Ocena uspešno kreirana!", 
+            ocenaID: result.insertId 
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -1,22 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Home = () => {
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
     const [projekti, setProjekti] = useState([]);
     const [sadrzaji, setSadrzaji] = useState([]);
     const [predaje, setPredaje] = useState([]);
-    const navigate = useNavigate();
+    
+    const [showModal, setShowModal] = useState(false);
+    const [selectedPredajaID, setSelectedPredajaID] = useState(null);
+    const [ocenaInput, setOcenaInput] = useState('');
+    const [komentarInput, setKomentarInput] = useState('');
 
+    const navigate = useNavigate();
+    const location = useLocation();
     const isStudent = user?.studentID || user?.role === 'student';
 
     const fetchData = async () => {
         if (!user) return;
-
         const token = localStorage.getItem('token');
         const config = { headers: { Authorization: token } };
-
         try {
             const currentID = user.studentID;
             const projekatUrl = isStudent 
@@ -24,57 +28,54 @@ const Home = () => {
                 : `http://localhost:5000/api/projekat`;
             const resProjekti = await axios.get(projekatUrl, config);
             setProjekti(resProjekti.data);
-            
             const resSadrzaj = await axios.get('http://localhost:5000/api/sadrzaj/select', config);
             setSadrzaji(resSadrzaj.data);
-
             if (!isStudent) {      
                 const resPredaje = await axios.get('http://localhost:5000/api/predaja/all', config);
                 setPredaje(resPredaje.data);
             }
-        } catch (err) {
-            console.error("Greška pri učitavanju podataka:", err);
-        }
+        } catch (err) { console.error(err); }
     };
 
-    useEffect(() => {
-        fetchData();
-    }, [user]);
+    useEffect(() => { fetchData(); }, [user]);
 
-    const obrisiProjekat = async (projekatID) => {
-        if (window.confirm("Da li ste sigurni da želite da obrišete ovaj projekat?")) {
-            try {
-                const token = localStorage.getItem('token');
-                await axios.delete(`http://localhost:5000/api/projekat/delete/${projekatID}`, {
-                    headers: { Authorization: token }
-                });
-                fetchData(); 
-            } catch (err) {
-                alert("Greška pri brisanju projekta");
-            }
-        }
-    };
-
-    const handleOceni = async (predajaID) => {
-    const ocena = prompt("Unesite ID ocene iz tabele 'ocena':");
-    
-    if (ocena !== null && ocena.trim() !== "" && !isNaN(ocena)) {
+    const handlePotvrdiOcenu = async () => {
+        if (!ocenaInput) return alert("Unesite ocenu!");
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:5000/api/predaja/oceni/${predajaID}`, 
-                { ocenaID: parseInt(ocena) }, 
-                { headers: { Authorization: token } }
-            );
+            const config = { headers: { Authorization: token } };
+            const resOcena = await axios.post('http://localhost:5000/api/ocena', {
+                vrednost: parseInt(ocenaInput),
+                komentar: komentarInput
+            }, config);
+            const noviID = resOcena.data.ocenaID;
+            await axios.put(`http://localhost:5000/api/predaja/oceni/${selectedPredajaID}`, { ocenaID: noviID }, config);
             alert("Uspešno ocenjeno!");
-            fetchData(); 
-        } catch (err) {
-            alert("Greška: Proverite da li taj ID ocene postoji u bazi.");
-        }
-    }
-};
+            setShowModal(false);
+            setOcenaInput(''); setKomentarInput('');
+            fetchData();
+        } catch (err) { alert("Greška pri unosu ocene."); }
+    };
 
     return (
         <div style={layoutStyle}>
+            
+            {showModal && (
+                <div style={modalOverlayStyle}>
+                    <div style={modalContentStyle}>
+                        <h3 style={{marginTop: 0, fontSize: '22px'}}>Oceni rad</h3>
+                        <label style={labelStyle}>Ocena (5-10)</label>
+                        <input type="number" style={inputStyle} value={ocenaInput} onChange={(e) => setOcenaInput(e.target.value)} />
+                        <label style={{...labelStyle, marginTop: '15px'}}>Komentar</label>
+                        <textarea style={{...inputStyle, height: '100px'}} value={komentarInput} onChange={(e) => setKomentarInput(e.target.value)} />
+                        <div style={{display: 'flex', gap: '15px', marginTop: '25px'}}>
+                            <button onClick={handlePotvrdiOcenu} style={confirmButtonStyle}>Sačuvaj</button>
+                            <button onClick={() => setShowModal(false)} style={cancelButtonStyle}>Odustani</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             
             <aside style={sidebarStyle}>
                 <div style={logoAreaStyle}>
@@ -82,75 +83,50 @@ const Home = () => {
                     <h2 style={sidebarTitleStyle}>EduPanel</h2>
                 </div>
                 
-                <p style={sectionLabelStyle}>{isStudent ? "MOJI PROJEKTI" : "STUDENTSKI RADOVI"}</p>
-                
-                {isStudent && (
-                    <button onClick={() => navigate('/create-project')} style={newProjectButtonStyle}>
-                        + Novi projekat
-                    </button>
-                )}
-
-                <div style={projectListContainer}>
-                    {projekti.length > 0 ? projekti.map(p => (
-                        <div key={p.projekatID} style={sidebarProjectItem}>
-                            <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-                                <div style={fileIconStyle}>📄</div>
-                                <span style={projectNameStyle}>{p.naziv}</span>
-                            </div>
-                            {isStudent && (
-                                <button onClick={() => obrisiProjekat(p.projekatID)} style={deleteLinkStyle}>✕</button>
-                            )}
+                <nav style={{ marginBottom: '40px' }}>
+                    <p style={sectionLabelStyle}>GLAVNI MENI</p>
+                    <div onClick={() => navigate('/home')} style={{...menuItemStyle, backgroundColor: location.pathname === '/home' ? '#f0f7ff' : 'transparent', color: location.pathname === '/home' ? '#3182ce' : '#4a5568'}}>
+                        🏠 Dashboard
+                    </div>
+                    {isStudent && (
+                        <div onClick={() => navigate('/moji-radovi')} style={{...menuItemStyle, backgroundColor: location.pathname === '/moji-radovi' ? '#f0f7ff' : 'transparent', color: location.pathname === '/moji-radovi' ? '#3182ce' : '#4a5568'}}>
+                            📁 Moji predati radovi
                         </div>
-                    )) : (
-                        <p style={emptyTextStyle}>Nema dostupnih stavki.</p>
                     )}
+                </nav>
+
+                <p style={sectionLabelStyle}>{isStudent ? "MOJI PROJEKTI" : "STUDENTSKI RADOVI"}</p>
+                {isStudent && <button onClick={() => navigate('/create-project')} style={newProjectButtonStyle}>+ Novi projekat</button>}
+                <div style={projectListContainer}>
+                    {projekti.map(p => (
+                        <div key={p.projekatID} style={sidebarProjectItem}>📄 {p.naziv}</div>
+                    ))}
                 </div>
             </aside>
 
             
             <main style={mainContentStyle}>
                 <header style={headerWrapperStyle}>
-                    <div style={welcomeTextStyle}>
+                    <div>
                         <h1 style={h1Style}>Zdravo, {user?.ime} 👋</h1>
-                        <p style={roleBadgeStyle}>
-                            Uloga: <span style={{color: '#4681d8'}}>{isStudent ? 'Student' : 'Nastavnik'}</span>
-                        </p>
+                        <p style={roleBadgeStyle}>Uloga: <span style={{color: '#4681d8'}}>{isStudent ? 'Student' : 'Nastavnik'}</span></p>
                     </div>
-                    <button 
-                        onClick={() => { localStorage.clear(); window.location.href='/login'; }}
-                        style={logoutButtonStyle}
-                    >
-                        Odjavi se
-                    </button>
+                    <button onClick={() => { localStorage.clear(); window.location.href='/login'; }} style={logoutButtonStyle}>Odjavi se</button>
                 </header>
 
                 <div style={dashboardGridStyle}>
                     
-                    <section style={{ ...wideContentCardStyle, flex: isStudent ? 1 : 1.5 }}>
-                        <div style={cardHeaderStyle}>
-                            <h3 style={cardTitleStyle}>Dostupni sadržaji</h3>
-                        </div>
+                    <section style={wideContentCardStyle}>
+                        <div style={cardHeaderStyle}><h3 style={cardTitleStyle}>Dostupni sadržaji</h3></div>
                         <div style={tableHeaderStyle}>
-                            <span style={{ flex: 2 }}>PREDMET</span>
-                            <span style={{ flex: 1, textAlign: 'center' }}>TIP</span>
+                            <span style={{flex: 3}}>PREDMET</span>
+                            <span style={{flex: 1, textAlign: 'center'}}>TIP</span>
                         </div>
                         <div style={scrollAreaStyle}>
                             {sadrzaji.map(s => (
                                 <div key={s.sadrzajID} style={contentRowStyle}>
-                                    <span style={{ flex: 2, fontWeight: '500' }}>{s.naziv}</span>
-                                    <div style={{ flex: 1, textAlign: 'center' }}>
-                                        <span 
-                                            onClick={() => isStudent && navigate(`/test/${s.sadrzajID}`)}
-                                            style={{
-                                                ...typeBadgeStyle, 
-                                                cursor: isStudent ? 'pointer' : 'default',
-                                                backgroundColor: isStudent ? '#ebf8ff' : '#f7fafc',
-                                                border: isStudent ? '1px solid #3182ce' : '1px solid #e2e8f0'
-                                            }}
-                                        >
-                                            {s.tip}
-                                        </span>
-                                    </div>
+                                    <span style={{flex: 3, fontWeight: '600', fontSize: '18px'}}>{s.naziv}</span>
+                                    <span style={typeBadgeStyle} onClick={() => isStudent && navigate(`/test/${s.sadrzajID}`)}>{s.tip}</span>
                                 </div>
                             ))}
                         </div>
@@ -159,26 +135,23 @@ const Home = () => {
                     
                     {!isStudent && (
                         <section style={submissionsPanelStyle}>
-                            <div style={cardHeaderStyle}>
-                                <h3 style={cardTitleStyle}>Poslednje predaje studenata</h3>
-                            </div>
+                            <div style={cardHeaderStyle}><h3 style={cardTitleStyle}>Poslednje predaje</h3></div>
                             <div style={scrollAreaStyle}>
-                                {predaje.length > 0 ? predaje.map(p => (
+                                {predaje.map(p => (
                                     <div key={p.predajaID} style={submissionCardStyle}>
                                         <div style={submissionHeaderStyle}>
-                                            <span style={studentNameStyle}>{p.imeStudenta} {p.prezimeStudenta} — {p.vrstaTesta}</span>
+                                            <span style={studentNameStyle}>{p.imeStudenta} {p.prezimeStudenta}</span>
                                             <span style={dateStyle}>{new Date(p.datumPredaje).toLocaleDateString()}</span>
                                         </div>
-                                        <div style={submissionBodyStyle}>
-                                            <p style={{fontSize: '13px', margin: '5px 0', color: '#718096'}}>Sadržaj rada:</p>
-                                            <pre style={preTextStyle}>{p.sadrzajRada}</pre>
-                                        </div>
-                                        <button onClick={() => handleOceni(p.predajaID)} style={gradeButtonStyle}>
-                                        {p.ocenaID ? `Ocenjeno: ${p.ocenaID}` : 'Oceni rad'}</button>
+                                        <div style={{marginBottom: '10px', color: '#718096'}}>{p.vrstaTesta}</div>
+                                        <div style={submissionBodyStyle}><pre style={preTextStyle}>{p.sadrzajRada}</pre></div>
+                                        {p.ocenaID > 0 ? (
+                                            <div style={ocenaBoxStyle}><strong>Ocena: {p.ocenaVrednost}</strong></div>
+                                        ) : (
+                                            <button onClick={() => {setSelectedPredajaID(p.predajaID); setShowModal(true);}} style={gradeButtonStyle}>Oceni rad</button>
+                                        )}
                                     </div>
-                                )) : (
-                                    <p style={{padding: '20px', textAlign: 'center', color: '#a0aec0'}}>Još uvek nema predatih radova.</p>
-                                )}
+                                ))}
                             </div>
                         </section>
                     )}
@@ -189,41 +162,45 @@ const Home = () => {
 };
 
 
-const dashboardGridStyle = { display: 'flex', gap: '24px', flex: 1 };
-const h1Style = { margin: 0, fontSize: '28px', color: '#1a202c', fontWeight: '800' };
-const logoAreaStyle = { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' };
-const logoIconStyle = { width: '40px', height: '40px', backgroundColor: '#4681d8', borderRadius: '10px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' };
-const sectionLabelStyle = { fontSize: '11px', fontWeight: '800', color: '#a0aec0', letterSpacing: '0.1em', marginBottom: '15px' };
-const fileIconStyle = { fontSize: '18px' };
-const emptyTextStyle = { color: '#a0aec0', fontSize: '13px', textAlign: 'center', marginTop: '20px' };
-const scrollAreaStyle = { maxHeight: '60vh', overflowY: 'auto' };
-const submissionsPanelStyle = { flex: 1, backgroundColor: '#fff', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' };
-const submissionCardStyle = { padding: '16px', borderBottom: '1px solid #edf2f7', transition: '0.2s hover', ':hover': { backgroundColor: '#f8fafc' } };
-const submissionHeaderStyle = { display: 'flex', justifyContent: 'space-between', marginBottom: '10px' };
-const studentNameStyle = { fontWeight: '700', color: '#2d3748', fontSize: '14px' };
-const dateStyle = { fontSize: '12px', color: '#a0aec0' };
-const submissionBodyStyle = { backgroundColor: '#f7fafc', padding: '12px', borderRadius: '8px', marginBottom: '10px' };
-const preTextStyle = { whiteSpace: 'pre-wrap', fontSize: '13px', fontFamily: 'inherit', color: '#4a5568', margin: 0 };
-const gradeButtonStyle = { width: '100%', padding: '8px', backgroundColor: '#ebf8ff', color: '#3182ce', border: '1px solid #3182ce', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' };
+const layoutStyle = { display: 'flex', width: '100vw', minHeight: '100vh', backgroundColor: '#f8fafc', margin: 0 };
+const sidebarStyle = { width: '320px', backgroundColor: '#fff', borderRight: '1px solid #e2e8f0', padding: '40px 30px' };
+const mainContentStyle = { flex: 1, padding: '60px', maxWidth: 'calc(100vw - 320px)' };
+const dashboardGridStyle = { display: 'flex', gap: '40px', width: '100%' };
+const wideContentCardStyle = { flex: 2, backgroundColor: '#fff', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', overflow: 'hidden' };
+const submissionsPanelStyle = { flex: 1.3, backgroundColor: '#fff', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' };
 
-const layoutStyle = { display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc', fontFamily: "'Inter', sans-serif" };
-const sidebarStyle = { width: '280px', backgroundColor: '#fff', borderRight: '1px solid #e2e8f0', padding: '30px 20px' };
-const sidebarTitleStyle = { fontSize: '20px', fontWeight: '800', color: '#1a202c', margin: 0 };
-const newProjectButtonStyle = { width: '100%', padding: '12px', backgroundColor: '#38a169', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', marginBottom: '20px' };
+
+const menuItemStyle = { padding: '15px 20px', borderRadius: '14px', cursor: 'pointer', marginBottom: '10px', fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '15px' };
+const logoAreaStyle = { display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '60px' };
+const logoIconStyle = { width: '50px', height: '50px', backgroundColor: '#4681d8', borderRadius: '15px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '22px' };
+const sidebarTitleStyle = { fontSize: '24px', fontWeight: '800' };
+const sectionLabelStyle = { fontSize: '13px', fontWeight: '800', color: '#a0aec0', marginBottom: '20px' };
+const newProjectButtonStyle = { width: '100%', padding: '16px', backgroundColor: '#38a169', color: 'white', border: 'none', borderRadius: '14px', cursor: 'pointer', fontWeight: '700', fontSize: '16px', marginBottom: '30px' };
+const sidebarProjectItem = { padding: '18px', borderRadius: '14px', backgroundColor: '#f8fafc', fontSize: '16px', marginBottom: '10px' };
+const headerWrapperStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '60px' };
+const h1Style = { margin: 0, fontSize: '36px', fontWeight: '800' };
+const roleBadgeStyle = { fontSize: '20px', color: '#718096', marginTop: '10px' };
+const logoutButtonStyle = { padding: '12px 30px', color: '#e53e3e', border: '2px solid #e53e3e', borderRadius: '14px', cursor: 'pointer', fontWeight: '700', fontSize: '16px' };
+const cardHeaderStyle = { padding: '30px', borderBottom: '1px solid #edf2f7' };
+const cardTitleStyle = { margin: 0, fontSize: '22px' };
+const tableHeaderStyle = { display: 'flex', padding: '15px 30px', backgroundColor: '#f8fafc', color: '#a0aec0', fontSize: '13px', fontWeight: '800' };
+const contentRowStyle = { display: 'flex', padding: '25px 30px', borderBottom: '1px solid #edf2f7', alignItems: 'center' };
+const typeBadgeStyle = { padding: '8px 20px', backgroundColor: '#ebf8ff', color: '#3182ce', borderRadius: '18px', fontSize: '13px', fontWeight: '800', cursor: 'pointer' };
+const scrollAreaStyle = { maxHeight: '70vh', overflowY: 'auto' };
+const submissionCardStyle = { padding: '25px', borderBottom: '1px solid #edf2f7' };
+const submissionHeaderStyle = { display: 'flex', justifyContent: 'space-between', marginBottom: '12px' };
+const studentNameStyle = { fontWeight: '700', fontSize: '18px' };
+const dateStyle = { fontSize: '14px', color: '#a0aec0' };
+const submissionBodyStyle = { backgroundColor: '#f7fafc', padding: '20px', borderRadius: '14px', marginBottom: '20px' };
+const preTextStyle = { whiteSpace: 'pre-wrap', fontSize: '15px', margin: 0 };
+const gradeButtonStyle = { width: '100%', padding: '15px', backgroundColor: '#3182ce', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '700', fontSize: '15px', cursor: 'pointer' };
+const ocenaBoxStyle = { backgroundColor: '#f0fff4', border: '1px solid #c6f6d5', padding: '15px', borderRadius: '12px', color: '#2f855a', textAlign: 'center' };
+const modalOverlayStyle = { position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 };
+const modalContentStyle = { backgroundColor: 'white', padding: '40px', borderRadius: '24px', width: '450px' };
+const labelStyle = { display: 'block', marginBottom: '8px', fontWeight: '700' };
+const inputStyle = { width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', boxSizing: 'border-box' };
+const confirmButtonStyle = { flex: 1, padding: '15px', backgroundColor: '#3182ce', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '700' };
+const cancelButtonStyle = { padding: '15px', backgroundColor: '#edf2f7', color: '#4a5568', border: 'none', borderRadius: '12px', fontWeight: '700' };
 const projectListContainer = { display: 'flex', flexDirection: 'column' };
-const sidebarProjectItem = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderRadius: '8px', marginBottom: '5px', backgroundColor: '#f8fafc' };
-const projectNameStyle = { fontSize: '14px', color: '#4a5568' };
-const deleteLinkStyle = { background: 'none', border: 'none', color: '#e53e3e', cursor: 'pointer', fontSize: '16px' };
-const mainContentStyle = { flex: 1, padding: '40px 50px', display: 'flex', flexDirection: 'column' };
-const headerWrapperStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' };
-const welcomeTextStyle = { flex: 1 };
-const roleBadgeStyle = { color: '#718096', fontSize: '16px', marginTop: '5px', fontWeight: '500' };
-const logoutButtonStyle = { padding: '10px 20px', color: '#e53e3e', border: '2px solid #e53e3e', borderRadius: '8px', cursor: 'pointer', fontWeight: '700' };
-const wideContentCardStyle = { backgroundColor: '#fff', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', overflow: 'hidden' };
-const cardHeaderStyle = { padding: '20px 24px', borderBottom: '1px solid #edf2f7' };
-const cardTitleStyle = { margin: 0, fontSize: '18px', color: '#2d3748' };
-const tableHeaderStyle = { display: 'flex', padding: '12px 24px', backgroundColor: '#f8fafc', color: '#a0aec0', fontSize: '11px', fontWeight: '800' };
-const contentRowStyle = { display: 'flex', padding: '18px 24px', borderBottom: '1px solid #edf2f7' };
-const typeBadgeStyle = { padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '800' };
 
 export default Home;
