@@ -6,6 +6,11 @@ import CustomButton from '../components/CustomButton';
 const AdminHome = () => {
     const [studenti, setStudenti] = useState([]);
     const [nastavnici, setNastavnici] = useState([]);
+    
+    
+    const [searchStudent, setSearchStudent] = useState('');
+    const [searchNastavnik, setSearchNastavnik] = useState('');
+
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -14,28 +19,43 @@ const AdminHome = () => {
         navigate('/login');
     };
 
+    
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchStudenti = async () => {
             try {
                 const token = localStorage.getItem('token');
-                
-                const config = { headers: { Authorization: token } };
-                
-                const resStudenti = await axios.get('http://localhost:5000/api/student/select', config);
-                const resNastavnici = await axios.get('http://localhost:5000/api/nastavnik/select', config);
-                
-                setStudenti(resStudenti.data);
-                setNastavnici(resNastavnici.data);
+                const config = { 
+                    headers: { Authorization: token },
+                    params: { search: searchStudent } 
+                };
+                const res = await axios.get('http://localhost:5000/api/student/select', config);
+                setStudenti(res.data);
             } catch (err) {
-                console.error("Greška pri učitavanju:", err);
-                if (err.response?.status === 401) handleLogout();
+                console.error("Greška pri učitavanju studenata:", err);
             }
         };
-        fetchData();
-    }, [navigate]);
+        fetchStudenti();
+    }, [searchStudent]);
+
+    
+    useEffect(() => {
+        const fetchNastavnici = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const config = { 
+                    headers: { Authorization: token },
+                    params: { search: searchNastavnik } 
+                };
+                const res = await axios.get('http://localhost:5000/api/nastavnik/select', config);
+                setNastavnici(res.data);
+            } catch (err) {
+                console.error("Greška pri učitavanju nastavnika:", err);
+            }
+        };
+        fetchNastavnici();
+    }, [searchNastavnik]);
 
     const obrisiKorisnika = async (tip, id) => {
-        
         if (!id) return alert("Greška: ID nije pronađen!");
 
         if (window.confirm(`Da li ste sigurni da želite brisanje?`)) {
@@ -45,7 +65,6 @@ const AdminHome = () => {
                     headers: { Authorization: token }
                 });
 
-                
                 if (tip === 'student') {
                     setStudenti(prev => prev.filter(s => s.studentID !== id));
                 } else {
@@ -58,6 +77,20 @@ const AdminHome = () => {
         }
     };
 
+    
+    const searchInputStyle = {
+        width: '100%',
+        padding: '12px 15px',
+        marginBottom: '20px',
+        borderRadius: '10px',
+        border: '1px solid #e2e8f0',
+        fontSize: '15px',
+        outline: 'none',
+        boxSizing: 'border-box',
+        transition: 'border-color 0.2s',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+    };
+
     return (
         <div style={{ 
             display: 'flex', flexDirection: 'column', alignItems: 'center', 
@@ -65,6 +98,7 @@ const AdminHome = () => {
             padding: '20px', boxSizing: 'border-box' 
         }}>
             <div style={{ width: '90%', maxWidth: '1200px' }}>
+                
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                     <h1 style={{ margin: 0, color: '#1a1a1a' }}>Glavna stranica</h1>
@@ -96,8 +130,17 @@ const AdminHome = () => {
                     
                     
                     <div style={{ flex: 1, backgroundColor: 'white', padding: '25px', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
-                        <h3 style={{ borderBottom: '2px solid #4681d8', paddingBottom: '10px' }}>Studenti</h3>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+                        <h3 style={{ borderBottom: '2px solid #28a745', paddingBottom: '10px', marginBottom: '15px' }}>Studenti</h3>
+                        
+                        <input 
+                            type="text"
+                            placeholder="Pretraži studente po imenu ili prezimenu..."
+                            style={searchInputStyle}
+                            value={searchStudent}
+                            onChange={(e) => setSearchStudent(e.target.value)}
+                        />
+
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
                                 <tr style={{ textAlign: 'left', color: '#666' }}>
                                     <th style={{ padding: '12px' }}>Ime i Prezime</th>
@@ -122,12 +165,22 @@ const AdminHome = () => {
                                 ))}
                             </tbody>
                         </table>
+                        {studenti.length === 0 && <p style={{textAlign: 'center', color: '#999', marginTop: '20px'}}>Nema pronađenih studenata.</p>}
                     </div>
 
                     
                     <div style={{ flex: 1, backgroundColor: 'white', padding: '25px', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
-                        <h3 style={{ borderBottom: '2px solid #4681d8', paddingBottom: '10px' }}>Nastavnici</h3>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+                        <h3 style={{ borderBottom: '2px solid #17a2b8', paddingBottom: '10px', marginBottom: '15px' }}>Nastavnici</h3>
+
+                        <input 
+                            type="text"
+                            placeholder="Pretraži nastavnike po imenu ili prezimenu..."
+                            style={searchInputStyle}
+                            value={searchNastavnik}
+                            onChange={(e) => setSearchNastavnik(e.target.value)}
+                        />
+
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
                                 <tr style={{ textAlign: 'left', color: '#666' }}>
                                     <th style={{ padding: '12px' }}>Ime i Prezime</th>
@@ -152,6 +205,7 @@ const AdminHome = () => {
                                 ))}
                             </tbody>
                         </table>
+                        {nastavnici.length === 0 && <p style={{textAlign: 'center', color: '#999', marginTop: '20px'}}>Nema pronađenih nastavnika.</p>}
                     </div>
 
                 </div>

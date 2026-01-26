@@ -29,13 +29,16 @@ exports.getAllPredaje = async (req, res) => {
         p.sadrzajRada, 
         p.datumPredaje, 
         p.ocenaID,
+        o.vrednost, -- Ovde je vrednost iz tabele ocena
         s.ime AS imeStudenta,
-        s.prezime as prezimeStudenta, 
+        s.prezime AS prezimeStudenta, 
         sd.naziv AS vrstaTesta
     FROM predaja p
     JOIN student s ON p.studentID = s.studentID
     JOIN sadrzaj sd ON p.sadrzajID = sd.sadrzajID
+    LEFT JOIN ocena o ON p.ocenaID = o.ocenaID  -- Koristi LEFT JOIN da vidiš i neocenjene
     ORDER BY p.datumPredaje DESC`;
+    
     const [rows] = await db.query(query);
     res.status(200).json(rows);
     } catch (err) {

@@ -16,7 +16,7 @@ exports.createSadrzaj = async (req, res) => {
 };
 
 exports.getSadrzaj = async (req, res) => {
-    const { naziv, tip, id } = req.query; // Dodali smo id ovde
+    const { naziv, tip, id } = req.query; 
 
     try {
         let query = `
@@ -27,12 +27,12 @@ exports.getSadrzaj = async (req, res) => {
         
         let params = [];
 
-        // Ako je poslat ID, tražimo samo taj jedan red
+        
         if (id) {
             query += ' AND sadrzajID = ?';
             params.push(id);
             const [rows] = await db.query(query, params);
-            // Vraćamo samo JEDAN objekat, ne niz!
+            
             return res.status(200).json(rows[0]);
         }
         

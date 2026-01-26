@@ -46,24 +46,17 @@ exports.deleteNastavnik = async (req, res) => {
     }
 };
 exports.getNastavnici = async (req, res) => {
-    const { ime, prezime } = req.query; 
+    const { search } = req.query; 
 
     try {
-        let query = `
-            SELECT nastavnikID, ime, prezime, username, adminID 
-            FROM nastavnik 
-            WHERE 1=1
-        `;
+        let query = 'SELECT nastavnikID, ime, prezime, username, adminID FROM nastavnik';
         let params = [];
 
-        if (ime) {
-            query += ' AND ime LIKE ?';
-            params.push(`%${ime}%`);
-        }
-
-        if (prezime) {
-            query += ' AND prezime LIKE ?';
-            params.push(`%${prezime}%`);
+        if (search) {
+            
+            query += ' WHERE (ime LIKE ? OR prezime LIKE ? OR CONCAT(ime, " ", prezime) LIKE ?)';
+            const searchParam = `%${search}%`;
+            params.push(searchParam, searchParam, searchParam);
         }
 
         const [rows] = await db.query(query, params);

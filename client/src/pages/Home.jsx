@@ -7,7 +7,14 @@ const Home = () => {
     const [projekti, setProjekti] = useState([]);
     const [sadrzaji, setSadrzaji] = useState([]);
     const [predaje, setPredaje] = useState([]);
-    
+
+    const [searchNaziv, setSearchNaziv] = useState('');
+    const [searchTip, setSearchTip] = useState('');
+    const [tipoviIzBaze, setTipoviIzBaze] = useState([]);
+
+    const [searchStudent, setSearchStudent] = useState('');
+    const [searchPredmet, setSearchPredmet] = useState('');
+
     const [showModal, setShowModal] = useState(false);
     const [selectedPredajaID, setSelectedPredajaID] = useState(null);
     const [ocenaInput, setOcenaInput] = useState('');
@@ -20,16 +27,28 @@ const Home = () => {
     const fetchData = async () => {
         if (!user) return;
         const token = localStorage.getItem('token');
-        const config = { headers: { Authorization: token } };
+        const config = {
+            headers: { Authorization: token },
+            params: { naziv: searchNaziv, tip: searchTip }
+        };
         try {
             const currentID = user.studentID;
-            const projekatUrl = isStudent 
-                ? `http://localhost:5000/api/projekat/${currentID}` 
+            const projekatUrl = isStudent
+                ? `http://localhost:5000/api/projekat/${currentID}`
                 : `http://localhost:5000/api/projekat`;
+            
             const resProjekti = await axios.get(projekatUrl, config);
             setProjekti(resProjekti.data);
+
             const resSadrzaj = await axios.get('http://localhost:5000/api/sadrzaj/select', config);
-            setSadrzaji(resSadrzaj.data);
+            const podaciSadrzaja = resSadrzaj.data;
+            setSadrzaji(podaciSadrzaja);
+
+            if (!searchNaziv && !searchTip) {
+                const unikatniTipovi = [...new Set(podaciSadrzaja.map(item => item.tip))];
+                setTipoviIzBaze(unikatniTipovi);
+            }
+
             if (!isStudent) {      
                 const resPredaje = await axios.get('http://localhost:5000/api/predaja/all', config);
                 setPredaje(resPredaje.data);
@@ -37,7 +56,16 @@ const Home = () => {
         } catch (err) { console.error(err); }
     };
 
-    useEffect(() => { fetchData(); }, [user]);
+    useEffect(() => {
+        fetchData();
+    }, [user, searchNaziv, searchTip]);
+
+    const filtriranePredaje = predaje.filter(p => {
+        const punoIme = `${p.imeStudenta} ${p.prezimeStudenta}`.toLowerCase();
+        const predmet = (p.vrstaTesta || "").toLowerCase();
+        return punoIme.includes(searchStudent.toLowerCase()) && 
+               predmet.includes(searchPredmet.toLowerCase());
+    });
 
     const handlePotvrdiOcenu = async () => {
         if (!ocenaInput) return alert("Unesite ocenu!");
@@ -59,7 +87,6 @@ const Home = () => {
 
     return (
         <div style={layoutStyle}>
-            
             {showModal && (
                 <div style={modalOverlayStyle}>
                     <div style={modalContentStyle}>
@@ -76,7 +103,6 @@ const Home = () => {
                 </div>
             )}
 
-            
             <aside style={sidebarStyle}>
                 <div style={logoAreaStyle}>
                     <div style={logoIconStyle}>CP</div>
@@ -96,7 +122,11 @@ const Home = () => {
                 </nav>
 
                 <p style={sectionLabelStyle}>{isStudent ? "MOJI PROJEKTI" : "STUDENTSKI RADOVI"}</p>
-                {isStudent && <button onClick={() => navigate('/create-project')} style={newProjectButtonStyle}>+ Novi projekat</button>}
+                
+                {isStudent && (
+                    <button onClick={() => navigate('/create-project')} style={newProjectButtonStyle}>+ Novi projekat</button>
+                )}
+
                 <div style={projectListContainer}>
                     {projekti.map(p => (
                         <div key={p.projekatID} style={sidebarProjectItem}>📄 {p.naziv}</div>
@@ -104,7 +134,6 @@ const Home = () => {
                 </div>
             </aside>
 
-            
             <main style={mainContentStyle}>
                 <header style={headerWrapperStyle}>
                     <div>
@@ -115,29 +144,79 @@ const Home = () => {
                 </header>
 
                 <div style={dashboardGridStyle}>
-                    
                     <section style={wideContentCardStyle}>
-                        <div style={cardHeaderStyle}><h3 style={cardTitleStyle}>Dostupni sadržaji</h3></div>
+                        
+                        <div style={{...cardHeaderStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <h3 style={cardTitleStyle}>Dostupni sadržaji</h3>
+                            {!isStudent && (
+                                <button 
+                                    onClick={() => navigate('/create-content')} 
+                                    style={inlineAddButtonStyle}
+                                >
+                                    + Novi sadržaj
+                                </button>
+                            )}
+                        </div>
+                        
+                        <div style={searchContainerStyle}>
+                            <input
+                                type="text"
+                                placeholder="Pretraži po nazivu..."
+                                style={smallInputStyle}
+                                value={searchNaziv}
+                                onChange={(e) => setSearchNaziv(e.target.value)}
+                            />
+                            <select
+                                style={smallInputStyle}
+                                value={searchTip}
+                                onChange={(e) => setSearchTip(e.target.value)}
+                            >
+                                <option value="">Svi tipovi</option>
+                                {tipoviIzBaze.map((tip, index) => (
+                                    <option key={index} value={tip}>{tip}</option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div style={tableHeaderStyle}>
                             <span style={{flex: 3}}>PREDMET</span>
                             <span style={{flex: 1, textAlign: 'center'}}>TIP</span>
                         </div>
                         <div style={scrollAreaStyle}>
-                            {sadrzaji.map(s => (
+                            {sadrzaji.length > 0 ? sadrzaji.map(s => (
                                 <div key={s.sadrzajID} style={contentRowStyle}>
                                     <span style={{flex: 3, fontWeight: '600', fontSize: '18px'}}>{s.naziv}</span>
                                     <span style={typeBadgeStyle} onClick={() => isStudent && navigate(`/test/${s.sadrzajID}`)}>{s.tip}</span>
                                 </div>
-                            ))}
+                            )) : (
+                                <p style={{textAlign: 'center', padding: '30px', color: '#a0aec0'}}>Nema pronađenih sadržaja.</p>
+                            )}
                         </div>
                     </section>
 
-                    
                     {!isStudent && (
                         <section style={submissionsPanelStyle}>
                             <div style={cardHeaderStyle}><h3 style={cardTitleStyle}>Poslednje predaje</h3></div>
+                            
+                            <div style={{...searchContainerStyle, flexDirection: 'column', padding: '20px 30px'}}>
+                                <input 
+                                    type="text" 
+                                    placeholder="Pretraži studenta..." 
+                                    style={smallInputStyle} 
+                                    value={searchStudent}
+                                    onChange={(e) => setSearchStudent(e.target.value)}
+                                />
+                                <input 
+                                    type="text" 
+                                    placeholder="Pretraži po predmetu..." 
+                                    style={{...smallInputStyle, marginTop: '10px'}} 
+                                    value={searchPredmet}
+                                    onChange={(e) => setSearchPredmet(e.target.value)}
+                                />
+                            </div>
+
                             <div style={scrollAreaStyle}>
-                                {predaje.map(p => (
+                                {filtriranePredaje.map(p => (
                                     <div key={p.predajaID} style={submissionCardStyle}>
                                         <div style={submissionHeaderStyle}>
                                             <span style={studentNameStyle}>{p.imeStudenta} {p.prezimeStudenta}</span>
@@ -145,8 +224,9 @@ const Home = () => {
                                         </div>
                                         <div style={{marginBottom: '10px', color: '#718096'}}>{p.vrstaTesta}</div>
                                         <div style={submissionBodyStyle}><pre style={preTextStyle}>{p.sadrzajRada}</pre></div>
+                                        
                                         {p.ocenaID > 0 ? (
-                                            <div style={ocenaBoxStyle}><strong>Ocena: {p.ocenaVrednost}</strong></div>
+                                            <div style={ocenaBoxStyle}><strong>Ocena: {p.vrednost}</strong></div>
                                         ) : (
                                             <button onClick={() => {setSelectedPredajaID(p.predajaID); setShowModal(true);}} style={gradeButtonStyle}>Oceni rad</button>
                                         )}
@@ -162,14 +242,26 @@ const Home = () => {
 };
 
 
+const inlineAddButtonStyle = {
+    padding: '10px 20px',
+    backgroundColor: '#4681d8',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    fontWeight: '700',
+    fontSize: '14px',
+    cursor: 'pointer',
+    transition: 'background 0.2s'
+};
+
 const layoutStyle = { display: 'flex', width: '100vw', minHeight: '100vh', backgroundColor: '#f8fafc', margin: 0 };
 const sidebarStyle = { width: '320px', backgroundColor: '#fff', borderRight: '1px solid #e2e8f0', padding: '40px 30px' };
 const mainContentStyle = { flex: 1, padding: '60px', maxWidth: 'calc(100vw - 320px)' };
 const dashboardGridStyle = { display: 'flex', gap: '40px', width: '100%' };
 const wideContentCardStyle = { flex: 2, backgroundColor: '#fff', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', overflow: 'hidden' };
 const submissionsPanelStyle = { flex: 1.3, backgroundColor: '#fff', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' };
-
-
+const searchContainerStyle = { display: 'flex', gap: '15px', padding: '0 30px 20px 30px', borderBottom: '1px solid #edf2f7' };
+const smallInputStyle = { padding: '12px 15px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '14px', outline: 'none', flex: 1, backgroundColor: '#f8fafc' };
 const menuItemStyle = { padding: '15px 20px', borderRadius: '14px', cursor: 'pointer', marginBottom: '10px', fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '15px' };
 const logoAreaStyle = { display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '60px' };
 const logoIconStyle = { width: '50px', height: '50px', backgroundColor: '#4681d8', borderRadius: '15px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '22px' };

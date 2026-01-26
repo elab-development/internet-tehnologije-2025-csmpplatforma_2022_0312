@@ -67,7 +67,7 @@ exports.updateProjekat = async (req, res) => {
 
 
 exports.getProjekti = async (req, res) => {
-    // Proveravamo ID iz parametara rute (/api/projekat/:id)
+    
     const sID = req.params.id;
     
     console.log("Backend primio ID:", sID); 
@@ -76,13 +76,13 @@ exports.getProjekti = async (req, res) => {
         let query;
         let params = [];
 
-        // Proveravamo da li je sID zapravo broj ili validan string, a ne 'undefined'
+        
         if (sID && sID !== 'undefined') {
-            // Logika za studenta - vidi samo svoje
+            
             query = 'SELECT * FROM projekat WHERE studentID = ?';
             params = [sID];
         } else {
-            // Logika za nastavnika - vidi sve projekte i ko ih je radio
+            
             query = `
                 SELECT p.*, s.ime, s.prezime 
                 FROM projekat p 

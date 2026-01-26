@@ -47,19 +47,16 @@ exports.deleteStudent = async (req, res) => {
 };
 
 exports.getStudenti = async (req, res) => {
-    const { ime, prezime } = req.query; 
+    const { search } = req.query; 
     try {
-        let query = 'SELECT studentID, ime, prezime, username, adminID, grupaID FROM student WHERE 1=1';
+        let query = 'SELECT studentID, ime, prezime, username, adminID, grupaID FROM student';
         let params = [];
 
-        if (ime) {
-            query += ' AND ime LIKE ?';
-            params.push(`%${ime}%`);
-        }
-
-        if (prezime) {
-            query += ' AND prezime LIKE ?';
-            params.push(`%${prezime}%`);
+        if (search) {
+            
+            query += ' WHERE (ime LIKE ? OR prezime LIKE ? OR CONCAT(ime, " ", prezime) LIKE ?)';
+            const searchParam = `%${search}%`;
+            params.push(searchParam, searchParam, searchParam);
         }
 
         const [rows] = await db.query(query, params);
