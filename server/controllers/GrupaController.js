@@ -6,7 +6,7 @@ exports.createGrupa = async (req, res) => {
     try {
         await db.query(
             'INSERT INTO grupa (naziv, godina, nastavnikID, sadrzajID) VALUES (?, ?, ?, ?)',
-            [naziv, godina, nastavnikID, sadrzajID]
+            [naziv, godina, nastavnikID, sadrzajID || null]
         );
 
         res.status(201).json({ message: "Grupa uspešno kreirana!" });
@@ -14,6 +14,7 @@ exports.createGrupa = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
 exports.updateGrupa = async (req, res) => {
     const { id } = req.params;
     const updates = req.body; 

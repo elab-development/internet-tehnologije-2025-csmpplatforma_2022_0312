@@ -31,6 +31,7 @@ const Home = () => {
             headers: { Authorization: token },
             params: { naziv: searchNaziv, tip: searchTip }
         };
+
         try {
             const currentID = user.studentID;
             const projekatUrl = isStudent
@@ -41,19 +42,27 @@ const Home = () => {
             setProjekti(resProjekti.data);
 
             const resSadrzaj = await axios.get('http://localhost:5000/api/sadrzaj/select', config);
-            const podaciSadrzaja = resSadrzaj.data;
-            setSadrzaji(podaciSadrzaja);
+            setSadrzaji(resSadrzaj.data);
 
-            if (!searchNaziv && !searchTip) {
-                const unikatniTipovi = [...new Set(podaciSadrzaja.map(item => item.tip))];
-                setTipoviIzBaze(unikatniTipovi);
+            try {
+                const resSviTipovi = await axios.get('http://localhost:5000/api/sadrzaj/tipovi', {
+                    headers: { Authorization: token }
+                });
+                const unikatni = Array.isArray(resSviTipovi.data) 
+                    ? [...new Set(resSviTipovi.data.map(item => typeof item === 'string' ? item : item.tip))]
+                    : [];
+                setTipoviIzBaze(unikatni);
+            } catch (e) {
+                console.error("Greška kod tipova:", e);
             }
 
             if (!isStudent) {      
                 const resPredaje = await axios.get('http://localhost:5000/api/predaja/all', config);
                 setPredaje(resPredaje.data);
             }
-        } catch (err) { console.error(err); }
+        } catch (err) { 
+            console.error("Generalna greška pri dovlačenju podataka:", err); 
+        }
     };
 
     useEffect(() => {
@@ -114,6 +123,11 @@ const Home = () => {
                     <div onClick={() => navigate('/home')} style={{...menuItemStyle, backgroundColor: location.pathname === '/home' ? '#f0f7ff' : 'transparent', color: location.pathname === '/home' ? '#3182ce' : '#4a5568'}}>
                         🏠 Dashboard
                     </div>
+                    {!isStudent && (
+                        <div onClick={() => navigate('/studenti')} style={{...menuItemStyle, backgroundColor: location.pathname === '/studenti' ? '#f0f7ff' : 'transparent', color: location.pathname === '/studenti' ? '#3182ce' : '#4a5568'}}>
+                            👥 Studenti
+                        </div>
+                    )}
                     {isStudent && (
                         <div onClick={() => navigate('/moji-radovi')} style={{...menuItemStyle, backgroundColor: location.pathname === '/moji-radovi' ? '#f0f7ff' : 'transparent', color: location.pathname === '/moji-radovi' ? '#3182ce' : '#4a5568'}}>
                             📁 Moji predati radovi

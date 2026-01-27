@@ -59,5 +59,5 @@ CREATE TABLE predaja (
     sadrzajID INT NOT NULL,
     datumPredaje DATE,
     ocenaID INT,
-    PRIMARY KEY (predajaID, studentID, sadrzajID) --slozeni primarni kljuc
+    PRIMARY KEY (predajaID, studentID, sadrzajID) 
 );

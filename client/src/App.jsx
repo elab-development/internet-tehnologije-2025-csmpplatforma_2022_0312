@@ -9,6 +9,7 @@ import Home from './pages/Home';
 import TestStranica from './pages/TestStranica';
 import MojiRadovi from './pages/MojiRadovi';
 import CreateSadrzaj from './pages/CreateSadrzaj';
+import Studenti from './pages/Studenti';
 
 function App() {
   return (
@@ -38,6 +39,8 @@ function App() {
           <Route path="/moji-radovi" element={<MojiRadovi />} />
 
           <Route path="/create-content" element={<CreateSadrzaj />} />
+
+          <Route path="/studenti" element={<Studenti />} />
         </Routes>
       </div>
     </Router>

@@ -5,11 +5,8 @@ const jwt = require('jsonwebtoken');
 exports.registerStudent = async (req, res) => {
     const { ime, prezime, username, password, adminID, grupaID } = req.body;
 
-    try {
-        
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        
+    try {    
+        const hashedPassword = await bcrypt.hash(password, 10);  
         await db.query(
             'INSERT INTO student (ime, prezime, username, password, adminID,grupaID) VALUES ( ?, ?, ?, ?, ?,?)',
             [ime, prezime, username, hashedPassword, adminID,grupaID]
@@ -49,7 +46,11 @@ exports.deleteStudent = async (req, res) => {
 exports.getStudenti = async (req, res) => {
     const { search } = req.query; 
     try {
-        let query = 'SELECT studentID, ime, prezime, username, adminID, grupaID FROM student';
+        let query = `
+            SELECT s.studentID, s.ime, s.prezime, s.username, s.adminID, s.grupaID, g.naziv as nazivGrupe 
+            FROM student s 
+            LEFT JOIN grupa g ON s.grupaID = g.grupaID
+        `;
         let params = [];
 
         if (search) {
@@ -61,6 +62,26 @@ exports.getStudenti = async (req, res) => {
 
         const [rows] = await db.query(query, params);
         res.status(200).json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.updateStudentGrupa = async (req, res) => {
+    const { id } = req.params;
+    const { grupaID } = req.body;
+
+    try {
+        const [result] = await db.query(
+            'UPDATE student SET grupaID = ? WHERE studentID = ?',
+            [grupaID, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Student nije pronađen!" });
+        }
+
+        res.status(200).json({ message: "Grupa uspešno ažurirana!" });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
