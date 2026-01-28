@@ -53,21 +53,69 @@ const Home = () => {
                     : [];
                 setTipoviIzBaze(unikatni);
             } catch (e) {
-                console.error("Greška kod tipova:", e);
+                console.error(e);
             }
 
-            if (!isStudent) {      
-                const resPredaje = await axios.get('http://localhost:5000/api/predaja/all', config);
-                setPredaje(resPredaje.data);
-            }
+            const predajeUrl = isStudent 
+                ? `http://localhost:5000/api/predaja/student/${user.studentID}`
+                : `http://localhost:5000/api/predaja/all`;
+
+            const resPredaje = await axios.get(predajeUrl, config);
+            setPredaje(resPredaje.data);
+            
         } catch (err) { 
-            console.error("Generalna greška pri dovlačenju podataka:", err); 
+            console.error(err); 
         }
     };
 
     useEffect(() => {
         fetchData();
     }, [user, searchNaziv, searchTip]);
+
+    const handleContentClick = (s) => {
+        if (!isStudent) {
+            navigate(`/test/${s.sadrzajID}`);
+            return;
+        }
+
+        const tipRada = s.tip.toLowerCase();
+
+        if (tipRada === 'grupni rad') {
+            if (s.dodeljenoGrupiID && s.dodeljenoGrupiID !== user.grupaID) {
+                alert("Nemate pristup! Ovaj sadržaj je namenjen drugoj grupi.");
+                return;
+            }
+        }
+
+        if (tipRada === 'dodatni rad') {
+            const nazivSadrzaja = s.naziv.trim().toLowerCase();
+
+            const ocenjeniRadovi = predaje.filter(p => {
+                const istiNaziv = (p.vrstaTesta || "").trim().toLowerCase() === nazivSadrzaja;
+                const ocena = p.ocenaVrednost || p.vrednost || p.ocena;
+                const imaOcenu = ocena !== null && ocena !== undefined;
+                return istiNaziv && imaOcenu;
+            }).sort((a, b) => b.predajaID - a.predajaID);
+
+            const zadnjiRad = ocenjeniRadovi[0];
+
+            if (!zadnjiRad) {
+                alert(`Pristup odbijen. Morate imati ocenjen običan rad iz predmeta "${s.naziv}" da biste pristupili dodatnom radu.`);
+                return;
+            }
+
+            const vrednostOcene = Number(zadnjiRad.ocenaVrednost || zadnjiRad.vrednost || zadnjiRad.ocena);
+
+            if (vrednostOcene === 8 || vrednostOcene === 9) {
+                navigate(`/test/${s.sadrzajID}`);
+            } else {
+                alert(`Nemate pravo pristupa. Vaša poslednja ocena iz predmeta "${s.naziv}" je ${vrednostOcene}. Potrebna je ocena 8 ili 9.`);
+            }
+            return; 
+        }
+
+        navigate(`/test/${s.sadrzajID}`);
+    };
 
     const filtriranePredaje = predaje.filter(p => {
         const punoIme = `${p.imeStudenta} ${p.prezimeStudenta}`.toLowerCase();
@@ -136,11 +184,9 @@ const Home = () => {
                 </nav>
 
                 <p style={sectionLabelStyle}>{isStudent ? "MOJI PROJEKTI" : "STUDENTSKI RADOVI"}</p>
-                
                 {isStudent && (
                     <button onClick={() => navigate('/create-project')} style={newProjectButtonStyle}>+ Novi projekat</button>
                 )}
-
                 <div style={projectListContainer}>
                     {projekti.map(p => (
                         <div key={p.projekatID} style={sidebarProjectItem}>📄 {p.naziv}</div>
@@ -159,32 +205,16 @@ const Home = () => {
 
                 <div style={dashboardGridStyle}>
                     <section style={wideContentCardStyle}>
-                        
                         <div style={{...cardHeaderStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                             <h3 style={cardTitleStyle}>Dostupni sadržaji</h3>
                             {!isStudent && (
-                                <button 
-                                    onClick={() => navigate('/create-content')} 
-                                    style={inlineAddButtonStyle}
-                                >
-                                    + Novi sadržaj
-                                </button>
+                                <button onClick={() => navigate('/create-content')} style={inlineAddButtonStyle}>+ Novi sadržaj</button>
                             )}
                         </div>
                         
                         <div style={searchContainerStyle}>
-                            <input
-                                type="text"
-                                placeholder="Pretraži po nazivu..."
-                                style={smallInputStyle}
-                                value={searchNaziv}
-                                onChange={(e) => setSearchNaziv(e.target.value)}
-                            />
-                            <select
-                                style={smallInputStyle}
-                                value={searchTip}
-                                onChange={(e) => setSearchTip(e.target.value)}
-                            >
+                            <input type="text" placeholder="Pretraži..." style={smallInputStyle} value={searchNaziv} onChange={(e) => setSearchNaziv(e.target.value)} />
+                            <select style={smallInputStyle} value={searchTip} onChange={(e) => setSearchTip(e.target.value)}>
                                 <option value="">Svi tipovi</option>
                                 {tipoviIzBaze.map((tip, index) => (
                                     <option key={index} value={tip}>{tip}</option>
@@ -197,50 +227,27 @@ const Home = () => {
                             <span style={{flex: 1, textAlign: 'center'}}>TIP</span>
                         </div>
                         <div style={scrollAreaStyle}>
-                            {sadrzaji.length > 0 ? sadrzaji.map(s => (
+                            {sadrzaji.map(s => (
                                 <div key={s.sadrzajID} style={contentRowStyle}>
                                     <span style={{flex: 3, fontWeight: '600', fontSize: '18px'}}>{s.naziv}</span>
-                                    <span style={typeBadgeStyle} onClick={() => isStudent && navigate(`/test/${s.sadrzajID}`)}>{s.tip}</span>
+                                    <span style={typeBadgeStyle} onClick={() => handleContentClick(s)}>{s.tip}</span>
                                 </div>
-                            )) : (
-                                <p style={{textAlign: 'center', padding: '30px', color: '#a0aec0'}}>Nema pronađenih sadržaja.</p>
-                            )}
+                            ))}
                         </div>
                     </section>
 
                     {!isStudent && (
                         <section style={submissionsPanelStyle}>
                             <div style={cardHeaderStyle}><h3 style={cardTitleStyle}>Poslednje predaje</h3></div>
-                            
-                            <div style={{...searchContainerStyle, flexDirection: 'column', padding: '20px 30px'}}>
-                                <input 
-                                    type="text" 
-                                    placeholder="Pretraži studenta..." 
-                                    style={smallInputStyle} 
-                                    value={searchStudent}
-                                    onChange={(e) => setSearchStudent(e.target.value)}
-                                />
-                                <input 
-                                    type="text" 
-                                    placeholder="Pretraži po predmetu..." 
-                                    style={{...smallInputStyle, marginTop: '10px'}} 
-                                    value={searchPredmet}
-                                    onChange={(e) => setSearchPredmet(e.target.value)}
-                                />
-                            </div>
-
                             <div style={scrollAreaStyle}>
                                 {filtriranePredaje.map(p => (
                                     <div key={p.predajaID} style={submissionCardStyle}>
                                         <div style={submissionHeaderStyle}>
                                             <span style={studentNameStyle}>{p.imeStudenta} {p.prezimeStudenta}</span>
-                                            <span style={dateStyle}>{new Date(p.datumPredaje).toLocaleDateString()}</span>
                                         </div>
-                                        <div style={{marginBottom: '10px', color: '#718096'}}>{p.vrstaTesta}</div>
-                                        <div style={submissionBodyStyle}><pre style={preTextStyle}>{p.sadrzajRada}</pre></div>
-                                        
-                                        {p.ocenaID > 0 ? (
-                                            <div style={ocenaBoxStyle}><strong>Ocena: {p.vrednost}</strong></div>
+                                        <div style={{marginBottom: '10px'}}>{p.vrstaTesta}</div>
+                                        { (p.ocenaVrednost || p.vrednost) ? (
+                                            <div style={ocenaBoxStyle}><strong>Ocena: {p.ocenaVrednost || p.vrednost}</strong></div>
                                         ) : (
                                             <button onClick={() => {setSelectedPredajaID(p.predajaID); setShowModal(true);}} style={gradeButtonStyle}>Oceni rad</button>
                                         )}
@@ -255,20 +262,8 @@ const Home = () => {
     );
 };
 
-
-const inlineAddButtonStyle = {
-    padding: '10px 20px',
-    backgroundColor: '#4681d8',
-    color: 'white',
-    border: 'none',
-    borderRadius: '12px',
-    fontWeight: '700',
-    fontSize: '14px',
-    cursor: 'pointer',
-    transition: 'background 0.2s'
-};
-
-const layoutStyle = { display: 'flex', width: '100vw', minHeight: '100vh', backgroundColor: '#f8fafc', margin: 0 };
+const inlineAddButtonStyle = { padding: '10px 20px', backgroundColor: '#4681d8', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '700', cursor: 'pointer' };
+const layoutStyle = { display: 'flex', width: '100vw', minHeight: '100vh', backgroundColor: '#f8fafc' };
 const sidebarStyle = { width: '320px', backgroundColor: '#fff', borderRight: '1px solid #e2e8f0', padding: '40px 30px' };
 const mainContentStyle = { flex: 1, padding: '60px', maxWidth: 'calc(100vw - 320px)' };
 const dashboardGridStyle = { display: 'flex', gap: '40px', width: '100%' };
