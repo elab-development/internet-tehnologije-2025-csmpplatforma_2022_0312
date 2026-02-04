@@ -23,11 +23,11 @@ const Login = () => {
         localStorage.setItem('user', JSON.stringify(res.data.user));
         alert(res.data.message);
 
-        // POPRAVKA: Čitamo role iz res.data.user
+        
         const userRole = res.data.user.role; 
 
         if (userRole === 'admin') {
-            navigate('/AdminHome'); // Proveri da li se ruta u App.jsx zove isto ovako
+            navigate('/AdminHome'); 
         } else {
             navigate('/home');
         }
@@ -43,14 +43,14 @@ const Login = () => {
         justifyContent: 'center', // Centriranje levo-desno
         alignItems: 'center',     // Centriranje gore-dole
         width: '100vw',           // Puna širina ekrana
-        height: '100vh',          // Puna visina ekrana
+        height: '100vh',          
         backgroundColor: '#4681d8',
-        position: 'fixed',        // Da bi ignorisao druge stilove
+        position: 'fixed',        
         top: 0,
         left: 0
     }}>
         <div style={{ 
-            width: '600px',       // Dodatno povećana širina (bilo je 500)
+            width: '600px',       // Dodatno povećana širina
             padding: '50px',      // Više prostora unutar forme
             backgroundColor: 'white',
             borderRadius: '15px', 
@@ -62,7 +62,7 @@ const Login = () => {
             </h1>
             
             <form onSubmit={handleLogin}>
-                <div style={{ fontSize: '20px' }}> {/* Povećan font za ceo input deo */}
+                <div style={{ fontSize: '20px' }}> 
                     <InputField 
                         label="Korisničko ime" 
                         name="username" 

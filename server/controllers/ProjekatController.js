@@ -1,15 +1,13 @@
 const db = require('../config/db');
 
+
 exports.createProjekat = async (req, res) => {
     const { naziv, opis, studentID } = req.body;
-
     try {
-        
         await db.query(
             'INSERT INTO projekat (naziv, opis, studentID) VALUES (?, ?, ?)',
             [naziv, opis, studentID]
         );
-
         res.status(201).json({ message: "Projekat uspešno kreiran!" });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -33,14 +31,13 @@ exports.deleteProjekat = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+
 exports.updateProjekat = async (req, res) => {
     const { id } = req.params;
     const updates = req.body; 
 
-    
     const keys = Object.keys(updates);
-    
-    
     if (keys.length === 0) {
         return res.status(400).json({ message: "Nema podataka za izmenu" });
     }
@@ -59,41 +56,45 @@ exports.updateProjekat = async (req, res) => {
             return res.status(404).json({ message: "Projekat nije pronađen!" });
         }
 
-        res.status(200).json({ message: "Projekat uspešno izmenjen!" });
+        res.status(200).json({ message: "Uspešno sačuvano!" });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
-
 exports.getProjekti = async (req, res) => {
-    
-    const sID = req.params.id;
-    
-    console.log("Backend primio ID:", sID); 
+    const id = req.params.id;
+    const tip = req.query.tip; 
 
     try {
         let query;
-        let params = [];
+        let params = [id];
 
-        
-        if (sID && sID !== 'undefined') {
-            
+        if (tip === 'pojedinacno') {
+            query = `
+                SELECT p.*, s.ime, s.prezime 
+                FROM projekat p 
+                LEFT JOIN student s ON p.studentID = s.studentID 
+                WHERE p.projekatID = ?`;
+        } else if (id && id !== 'undefined') {
             query = 'SELECT * FROM projekat WHERE studentID = ?';
-            params = [sID];
         } else {
-            
             query = `
                 SELECT p.*, s.ime, s.prezime 
                 FROM projekat p 
                 LEFT JOIN student s ON p.studentID = s.studentID
             `;
+            params = [];
         }
 
         const [results] = await db.query(query, params);
+
+        if (tip === 'pojedinacno') {
+            return res.status(200).json(results[0] || {});
+        }
+        
         res.status(200).json(results);
     } catch (err) {
-        console.error("SQL Greška:", err);
         res.status(500).json({ error: err.message });
     }
 };

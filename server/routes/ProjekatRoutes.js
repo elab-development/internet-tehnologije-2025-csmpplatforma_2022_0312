@@ -12,5 +12,6 @@ router.delete('/delete/:id', verifyToken, projekatController.deleteProjekat);
 router.get('/', verifyToken, projekatController.getProjekti); 
 router.get('/:id', verifyToken, projekatController.getProjekti); 
 
+
 module.exports = router;
 

@@ -10,6 +10,7 @@ import TestStranica from './pages/TestStranica';
 import MojiRadovi from './pages/MojiRadovi';
 import CreateSadrzaj from './pages/CreateSadrzaj';
 import Studenti from './pages/Studenti';
+import DetaljiProjekat from './pages/DetaljiProjekat';
 
 function App() {
   return (
@@ -18,13 +19,10 @@ function App() {
         <Routes>
           
           <Route path="/login" element={<Login />} />
-          
-          
+        
           <Route path="/register" element={<Register />} />
-
-          
-          <Route path="/" element={<Navigate to="/login" />} />
-          
+  
+          <Route path="/" element={<Navigate to="/login" />} />          
           
           <Route path="/AdminHome" element={<AdminHome />} />
 
@@ -41,6 +39,8 @@ function App() {
           <Route path="/create-content" element={<CreateSadrzaj />} />
 
           <Route path="/studenti" element={<Studenti />} />
+
+          <Route path="/projekat/:id" element={<DetaljiProjekat />} />
         </Routes>
       </div>
     </Router>

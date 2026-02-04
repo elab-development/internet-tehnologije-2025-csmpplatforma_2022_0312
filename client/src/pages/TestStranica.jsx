@@ -48,17 +48,21 @@ const TestStranica = () => {
     };
 
     const handlePredaj = async () => {
-        const numerisaniOdgovori = pitanjaLista.map((_, index) => {
+        const formatiraniOdgovori = pitanjaLista.map((pitanjeTekst, index) => {
             const odgovor = odgovoriPoPitanjima[index] || ""; 
-            return `${index + 1}. ${odgovor.trim()}`; 
-        }).join('\n'); 
+            const cistoPitanje = pitanjeTekst.replace(/^\d+\.\s*/, '').trim();
+            
+            return `PITANJE ${index + 1}: ${cistoPitanje}\n-> ODGOVOR: ${odgovor.trim() ? odgovor.trim() : 'Nema odgovora'}`; 
+        }).join('\n\n-----------------------------------\n\n'); 
 
         try {
             const token = localStorage.getItem('token');
             const podaciZaSlanje = {
                 studentID: user.studentID,
                 sadrzajID: sadrzajID,
-                sadrzajRada: numerisaniOdgovori 
+                tekst: formatiraniOdgovori,
+                odgovor: formatiraniOdgovori,
+                sadrzajRada: formatiraniOdgovori
             };
 
             await axios.post('http://localhost:5000/api/predaja/submit', podaciZaSlanje, {
@@ -68,6 +72,7 @@ const TestStranica = () => {
             alert("Uspešno predat rad!");
             navigate('/home');
         } catch (err) {
+            console.error(err);
             alert("Greška pri predaji rada.");
         }
     };
@@ -115,7 +120,6 @@ const TestStranica = () => {
         </div>
     );
 };
-
 
 const containerStyle = { 
     padding: '60px 0', 

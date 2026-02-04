@@ -73,9 +73,9 @@ const Home = () => {
     }, [user, searchNaziv, searchTip]);
 
     const handleContentClick = (s) => {
+        
         if (!isStudent) {
-            navigate(`/test/${s.sadrzajID}`);
-            return;
+            return; 
         }
 
         const tipRada = s.tip.toLowerCase();
@@ -142,12 +142,25 @@ const Home = () => {
         } catch (err) { alert("Greška pri unosu ocene."); }
     };
 
+    const selectedSubmission = predaje.find(p => p.predajaID === selectedPredajaID);
+
     return (
         <div style={layoutStyle}>
             {showModal && (
                 <div style={modalOverlayStyle}>
                     <div style={modalContentStyle}>
-                        <h3 style={{marginTop: 0, fontSize: '22px'}}>Oceni rad</h3>
+                        <h3 style={{marginTop: 0, fontSize: '22px'}}>Oceni rad: {selectedSubmission?.vrstaTesta}</h3>
+                        <p style={{marginBottom: '20px', color: '#718096'}}>
+                            Student: <strong>{selectedSubmission?.imeStudenta} {selectedSubmission?.prezimeStudenta}</strong>
+                        </p>
+
+                        <div style={{backgroundColor: '#f7fafc', padding: '15px', borderRadius: '12px', marginBottom: '25px', border: '1px solid #e2e8f0', maxHeight: '200px', overflowY: 'auto'}}>
+                            <p style={{fontSize: '12px', fontWeight: '800', color: '#a0aec0', marginTop: 0}}>ODGOVOR STUDENTA:</p>
+                            <p style={{whiteSpace: 'pre-wrap', color: '#2d3748', fontSize: '15px'}}>
+                                {selectedSubmission?.tekst || selectedSubmission?.odgovor || selectedSubmission?.sadrzajRada || "Nema unetog teksta."}
+                            </p>
+                        </div>
+
                         <label style={labelStyle}>Ocena (5-10)</label>
                         <input type="number" style={inputStyle} value={ocenaInput} onChange={(e) => setOcenaInput(e.target.value)} />
                         <label style={{...labelStyle, marginTop: '15px'}}>Komentar</label>
@@ -188,10 +201,16 @@ const Home = () => {
                     <button onClick={() => navigate('/create-project')} style={newProjectButtonStyle}>+ Novi projekat</button>
                 )}
                 <div style={projectListContainer}>
-                    {projekti.map(p => (
-                        <div key={p.projekatID} style={sidebarProjectItem}>📄 {p.naziv}</div>
-                    ))}
-                </div>
+                {projekti.map(p => (
+                    <div 
+                        key={p.projekatID} 
+                        style={{...sidebarProjectItem, cursor: 'pointer'}} 
+                        onClick={() => navigate(`/projekat/${p.projekatID}`)}
+                    >
+                        📄 {p.naziv}
+                    </div>
+                ))}
+            </div>
             </aside>
 
             <main style={mainContentStyle}>
@@ -230,7 +249,17 @@ const Home = () => {
                             {sadrzaji.map(s => (
                                 <div key={s.sadrzajID} style={contentRowStyle}>
                                     <span style={{flex: 3, fontWeight: '600', fontSize: '18px'}}>{s.naziv}</span>
-                                    <span style={typeBadgeStyle} onClick={() => handleContentClick(s)}>{s.tip}</span>
+                                    
+                                    <span 
+                                        style={{
+                                            ...typeBadgeStyle, 
+                                            cursor: isStudent ? 'pointer' : 'not-allowed',
+                                            opacity: isStudent ? 1 : 0.6
+                                        }} 
+                                        onClick={() => handleContentClick(s)}
+                                    >
+                                        {s.tip}
+                                    </span>
                                 </div>
                             ))}
                         </div>
@@ -261,6 +290,7 @@ const Home = () => {
         </div>
     );
 };
+
 
 const inlineAddButtonStyle = { padding: '10px 20px', backgroundColor: '#4681d8', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '700', cursor: 'pointer' };
 const layoutStyle = { display: 'flex', width: '100vw', minHeight: '100vh', backgroundColor: '#f8fafc' };
