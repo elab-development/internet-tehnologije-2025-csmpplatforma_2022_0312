@@ -35,7 +35,6 @@ exports.getSadrzaj = async (req, res) => {
 
 exports.getUnikatniTipovi = async (req, res) => {
     try {
-        
         const [rows] = await db.query('SELECT DISTINCT tip FROM sadrzaj');
         const tipovi = rows.map(row => row.tip);
         res.status(200).json(tipovi);

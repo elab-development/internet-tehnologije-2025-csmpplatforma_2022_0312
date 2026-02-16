@@ -101,7 +101,7 @@ const AdminHome = () => {
                 
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                    <h1 style={{ margin: 0, color: '#1a1a1a' }}>Glavna stranica</h1>
+                    <h1 style={{ margin: 0, color: '#1a1a1a' }}>Admin stranica</h1>
                     <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                         <div style={{ transform: 'scale(0.8)', transformOrigin: 'right' }}>
                             <CustomButton text="+ Registruj Novog Studenta" onClick={() => navigate('/register')} color="#28a745" />

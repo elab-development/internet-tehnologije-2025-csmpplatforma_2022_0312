@@ -153,7 +153,7 @@ const Studenti = () => {
 
             <main style={mainContentStyle}>
                 <header style={headerWrapperStyle}>
-                    <h1 style={h1Style}>Upravljanje studentima</h1>
+                    <h1 style={h1Style}>Upravljanje grupama</h1>
                 </header>
 
                 <div style={wideContentCardStyle}>

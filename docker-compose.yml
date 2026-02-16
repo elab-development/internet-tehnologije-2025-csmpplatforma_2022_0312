@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mysqldb:
+    image: mysql:8.0
+    container_name: csmp_db_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: csmp_baza
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_csmp_data:/var/lib/mysql
+      
+#backend
+  api:
+    build: ./server
+    container_name: csmp_api_container
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: mysqldb      
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: csmp_baza
+      DB_PORT: 3306         
+      PORT: 5000
+    depends_on:
+      - mysqldb
+
+#frontend
+  client:
+    build: ./client
+    container_name: csmp_client_container
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:5000/api 
+    depends_on:
+      - api
+
+volumes:
+  mysql_csmp_data:

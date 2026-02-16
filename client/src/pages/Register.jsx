@@ -51,7 +51,7 @@ const Register = () => {
                 width: '600px', padding: '50px', backgroundColor: 'white',
                 borderRadius: '15px', boxShadow: '0 15px 35px rgba(0,0,0,0.2)', textAlign: 'center'
             }}>
-                <h1 style={{ marginBottom: '30px', color: '#1a1a1a', fontSize: '32px' }}>Registracija</h1>
+                <h1 style={{ marginBottom: '30px', color: '#1a1a1a', fontSize: '32px' }}>Registracija studenta</h1>
                 
                 <form onSubmit={handleRegister}>
                     <div style={{ fontSize: '18px', textAlign: 'left' }}>
