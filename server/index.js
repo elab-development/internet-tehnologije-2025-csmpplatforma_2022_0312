@@ -3,11 +3,18 @@ const express = require('express');
 const cors = require('cors');
 const knex = require('knex');
 const knexConfig = require('./knexfile'); 
+
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./swagger'); 
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 app.use((req, res, next) => {
     console.log(`Zahtev stigao: ${req.method} ${req.url}`);
@@ -16,7 +23,6 @@ app.use((req, res, next) => {
 
 // Inicijalizacija Knex-a
 const db = knex(knexConfig.development);
-
 
 const connectWithRetry = () => {
     db.raw('SELECT 1')
@@ -30,6 +36,7 @@ const connectWithRetry = () => {
 };
 
 connectWithRetry();
+
 
 const studentRoutes = require('./routes/StudentRoutes');
 app.use('/api/student', studentRoutes);
@@ -61,4 +68,5 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server radi na portu: ${PORT}`);
+    console.log(`Swagger dokumentacija dostupna na: http://localhost:${PORT}/api-docs`);
 });
