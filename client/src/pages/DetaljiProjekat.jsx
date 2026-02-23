@@ -8,7 +8,6 @@ const DetaljiProjekat = () => {
     const [projekat, setProjekat] = useState({ naziv: '', opis: '', odgovor: '' });
     
     const user = JSON.parse(localStorage.getItem('user')); 
-    
     const isStudent = user?.studentID || user?.role === 'student';
     const isNastavnik = !isStudent; 
 
@@ -29,45 +28,79 @@ const DetaljiProjekat = () => {
         fetchProjekat();
     }, [id]);
 
-    const handleSave = async () => {
-        let payload = {};
-
-        if (isNastavnik) {
-            if (!projekat.odgovor?.trim()) {
-                alert("Morate uneti feedback pre slanja!");
-                return;
-            }
-            payload = { odgovor: projekat.odgovor };
-        } else {
-            if (!projekat.naziv.trim() || !projekat.opis.trim()) {
-                alert("Polja naziv i opis ne smeju biti prazna!");
-                return;
-            }
-            payload = { naziv: projekat.naziv, opis: projekat.opis };
-        }
-
+    // DODATA FUNKCIJA ZA DOWNLOAD PDF-a NA OVOJ STRANICI
+    const handleDownloadPDF = async () => {
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:5000/api/projekat/update/${id}`, payload, {
-                headers: { Authorization: token }
+            const response = await axios.get(`http://localhost:5000/api/projekat/download/${id}`, {
+                headers: { Authorization: token },
+                responseType: 'blob'
             });
-            alert(isNastavnik ? "Feedback uspešno poslat!" : "Projekat uspešno ažuriran!");
-            navigate('/home');
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Dokumentacija_${projekat.naziv.replace(/\s+/g, '_')}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
         } catch (err) {
-            alert("Greška pri čuvanju.");
+            alert("Greška pri preuzimanju PDF-a.");
         }
     };
+
+    const handleSave = async () => {
+    let payload = {};
+    if (isNastavnik) {
+        if (!projekat.odgovor?.trim()) {
+            alert("Morate uneti feedback pre slanja!");
+            return;
+        }
+        payload = { odgovor: projekat.odgovor };
+    } else {
+        if (!projekat.naziv.trim() || !projekat.opis.trim()) {
+            alert("Polja naziv i opis ne smeju biti prazna!");
+            return;
+        }
+        // Šaljemo naziv, opis I ime studenta za PDF
+        payload = { 
+            naziv: projekat.naziv, 
+            opis: projekat.opis,
+            studentIme: `${user.ime} ${user.prezime}` 
+        };
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        await axios.put(`http://localhost:5000/api/projekat/update/${id}`, payload, {
+            headers: { Authorization: token }
+        });
+        alert(isNastavnik ? "Feedback uspešno poslat!" : "Projekat i PDF uspešno ažurirani!");
+        navigate('/home');
+    } catch (err) {
+        alert("Greška pri čuvanju.");
+    }
+};
 
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100vw', minHeight: '100vh', backgroundColor: '#f0f2f5', margin: 0, padding: '20px', boxSizing: 'border-box' }}>
             <div style={{ width: '100%', maxWidth: '650px', backgroundColor: '#ffffff', padding: '40px', borderRadius: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif' }}>
                 
-                <h1 style={{ marginTop: 0, marginBottom: '30px', fontSize: '28px', color: '#1a202c', textAlign: 'center', fontWeight: '800' }}>
-                    {isNastavnik ? "Pregled studentskog rada" : "Izmena tvog projekta"}
-                </h1>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                    <h1 style={{ marginTop: 0, marginBottom: '10px', fontSize: '28px', color: '#1a202c', fontWeight: '800' }}>
+                        {isNastavnik ? "Pregled rada" : "Izmena projekta"}
+                    </h1>
+                    {/* DUGME ZA DOWNLOAD PDF-a */}
+                    <button 
+                        onClick={handleDownloadPDF}
+                        style={{backgroundColor: '#edf2f7', border: 'none', padding: '10px 15px', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', color: '#2d3748'}}
+                    >
+                        📥 Preuzmi PDF
+                    </button>
+                </div>
                 
                 {isNastavnik && projekat.ime && (
-                    <p style={{ textAlign: 'center', color: '#718096', marginBottom: '30px', fontWeight: '600', fontSize: '16px' }}>
+                    <p style={{ color: '#718096', marginBottom: '30px', fontWeight: '600', fontSize: '16px' }}>
                         Student: {projekat.ime} {projekat.prezime}
                     </p>
                 )}

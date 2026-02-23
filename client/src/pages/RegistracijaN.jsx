@@ -5,7 +5,13 @@ import InputField from '../components/InputField';
 import CustomButton from '../components/CustomButton';
 
 const RegistracijaN = () => {
-    const [userData, setUserData] = useState({ ime: '', prezime: '', username: '', password: '' });
+    const [userData, setUserData] = useState({ 
+        ime: '', 
+        prezime: '', 
+        email: '', 
+        username: '', 
+        password: '' 
+    });
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -18,7 +24,6 @@ const RegistracijaN = () => {
             const token = localStorage.getItem('token');
             const admin = JSON.parse(localStorage.getItem('user'));
 
-            
             const finalData = { 
                 ...userData, 
                 adminID: admin.id 
@@ -38,7 +43,7 @@ const RegistracijaN = () => {
     return (
         <div style={{ 
             display: 'flex', justifyContent: 'center', alignItems: 'center', 
-            width: '100vw', height: '100vh', backgroundColor: '#17a2b8', // Tirkizna za nastavnike
+            width: '100vw', height: '100vh', backgroundColor: '#17a2b8', 
             position: 'fixed', top: 0, left: 0 
         }}>
             <div style={{ 
@@ -53,6 +58,8 @@ const RegistracijaN = () => {
                     <div style={{ fontSize: '18px', textAlign: 'left' }}>
                         <InputField label="Ime" name="ime" value={userData.ime} onChange={handleChange} placeholder="Ime nastavnika" />
                         <InputField label="Prezime" name="prezime" value={userData.prezime} onChange={handleChange} placeholder="Prezime nastavnika" />
+                        {/* Novo polje za email ispod prezimena */}
+                        <InputField label="Email" name="email" type="email" value={userData.email} onChange={handleChange} placeholder="Email adresa nastavnika" />
                         <InputField label="Korisničko ime" name="username" value={userData.username} onChange={handleChange} placeholder="Username" />
                         <InputField label="Lozinka" type="password" name="password" value={userData.password} onChange={handleChange} placeholder="Lozinka" />
                     </div>

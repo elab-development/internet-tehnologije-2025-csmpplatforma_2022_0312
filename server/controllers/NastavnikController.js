@@ -1,9 +1,10 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { sendWelcomeEmail } = require('../services/emailService');
 
 exports.registerNastavnik = async (req, res) => {
-    const { ime, prezime, username, password, adminID } = req.body;
+    const { ime, prezime, email, username, password, adminID } = req.body;
 
     try {
         
@@ -11,9 +12,10 @@ exports.registerNastavnik = async (req, res) => {
 
         
         await db.query(
-            'INSERT INTO nastavnik (ime, prezime, username, password, adminID) VALUES (?, ?, ?, ?, ?)',
-            [ime, prezime, username, hashedPassword, adminID]
+            'INSERT INTO nastavnik (ime, prezime, email, username, password, adminID) VALUES (?, ?, ?, ?, ?, ?)',
+            [ime, prezime, email, username, hashedPassword, adminID]
         );
+        await sendWelcomeEmail(email, ime);
 
         res.status(201).json({ message: "Nastavnik uspešno registrovan!" });
     } catch (err) {

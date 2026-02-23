@@ -9,9 +9,9 @@ const Register = () => {
     const [userData, setUserData] = useState({ 
         ime: '', 
         prezime: '', 
+        email: '', 
         username: '', 
         password: '',
-         
     });
     
     const navigate = useNavigate();
@@ -57,6 +57,8 @@ const Register = () => {
                     <div style={{ fontSize: '18px', textAlign: 'left' }}>
                         <InputField label="Ime" name="ime" value={userData.ime} onChange={handleChange} placeholder="Ime studenta" />
                         <InputField label="Prezime" name="prezime" value={userData.prezime} onChange={handleChange} placeholder="Prezime studenta" />
+                        {/* Novo polje za email ispod prezimena */}
+                        <InputField label="Email" name="email" type="email" value={userData.email} onChange={handleChange} placeholder="Email adresa studenta" />
                         <InputField label="Korisničko ime" name="username" value={userData.username} onChange={handleChange} placeholder="Username" />
                         <InputField label="Lozinka" type="password" name="password" value={userData.password} onChange={handleChange} placeholder="Lozinka" />  
                     </div>

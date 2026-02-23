@@ -231,6 +231,7 @@ router.post('/add', verifyToken, projekatController.createProjekat);
 router.put('/update/:id', verifyToken, projekatController.updateProjekat);
 router.delete('/delete/:id', verifyToken, projekatController.deleteProjekat);
 
+router.get('/download/:id', verifyToken, projekatController.downloadPDF);
 
 router.get('/', verifyToken, projekatController.getProjekti); 
 router.get('/:id', verifyToken, projekatController.getProjekti); 

@@ -1,16 +1,18 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { sendWelcomeEmail } = require('../services/emailService');
 
 exports.registerStudent = async (req, res) => {
-    const { ime, prezime, username, password, adminID, grupaID } = req.body;
+    const { ime, prezime, email, username, password, adminID, grupaID } = req.body;
 
     try {    
         const hashedPassword = await bcrypt.hash(password, 10);  
         await db.query(
-            'INSERT INTO student (ime, prezime, username, password, adminID,grupaID) VALUES ( ?, ?, ?, ?, ?,?)',
-            [ime, prezime, username, hashedPassword, adminID,grupaID]
+            'INSERT INTO student (ime, prezime, email, username, password, adminID,grupaID) VALUES ( ?, ?, ?, ?, ?, ?,?)',
+            [ime, prezime, email, username, hashedPassword, adminID,grupaID]
         );
+        await sendWelcomeEmail(email, ime);
 
         res.status(201).json({ message: "Student uspešno registrovan!" });
     } catch (err) {
@@ -47,7 +49,7 @@ exports.getStudenti = async (req, res) => {
     const { search } = req.query; 
     try {
         let query = `
-            SELECT s.studentID, s.ime, s.prezime, s.username, s.adminID, s.grupaID, g.naziv as nazivGrupe 
+            SELECT s.studentID, s.ime, s.prezime, s.email, s.username, s.adminID, s.grupaID, g.naziv as nazivGrupe 
             FROM student s 
             LEFT JOIN grupa g ON s.grupaID = g.grupaID
         `;

@@ -72,14 +72,30 @@ const Home = () => {
         fetchData();
     }, [user, searchNaziv, searchTip]);
 
-    const handleContentClick = (s) => {
-        
-        if (!isStudent) {
-            return; 
+    const handleDownloadPDF = async (projekatID, naziv) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`http://localhost:5000/api/projekat/download/${projekatID}`, {
+                headers: { Authorization: token },
+                responseType: 'blob' 
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Dokumentacija_${naziv.replace(/\s+/g, '_')}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (err) {
+            alert("Greška pri preuzimanju PDF-a.");
         }
+    };
+
+    const handleContentClick = (s) => {
+        if (!isStudent) return; 
 
         const tipRada = s.tip.toLowerCase();
-
         if (tipRada === 'grupni rad') {
             if (s.dodeljenoGrupiID && s.dodeljenoGrupiID !== user.grupaID) {
                 alert("Nemate pristup! Ovaj sadržaj je namenjen drugoj grupi.");
@@ -89,39 +105,33 @@ const Home = () => {
 
         if (tipRada === 'dodatni rad') {
             const nazivSadrzaja = s.naziv.trim().toLowerCase();
-
             const ocenjeniRadovi = predaje.filter(p => {
                 const istiNaziv = (p.vrstaTesta || "").trim().toLowerCase() === nazivSadrzaja;
                 const ocena = p.ocenaVrednost || p.vrednost || p.ocena;
-                const imaOcenu = ocena !== null && ocena !== undefined;
-                return istiNaziv && imaOcenu;
+                return istiNaziv && (ocena !== null && ocena !== undefined);
             }).sort((a, b) => b.predajaID - a.predajaID);
 
             const zadnjiRad = ocenjeniRadovi[0];
-
             if (!zadnjiRad) {
-                alert(`Pristup odbijen. Morate imati ocenjen običan rad iz predmeta "${s.naziv}" da biste pristupili dodatnom radu.`);
+                alert(`Pristup odbijen. Morate imati ocenjen običan rad iz predmeta "${s.naziv}"...`);
                 return;
             }
 
             const vrednostOcene = Number(zadnjiRad.ocenaVrednost || zadnjiRad.vrednost || zadnjiRad.ocena);
-
             if (vrednostOcene === 8 || vrednostOcene === 9) {
                 navigate(`/test/${s.sadrzajID}`);
             } else {
-                alert(`Nemate pravo pristupa. Vaša poslednja ocena iz predmeta "${s.naziv}" je ${vrednostOcene}. Potrebna je ocena 8 ili 9.`);
+                alert(`Nemate pravo pristupa. Vaša poslednja ocena je ${vrednostOcene}.`);
             }
             return; 
         }
-
         navigate(`/test/${s.sadrzajID}`);
     };
 
     const filtriranePredaje = predaje.filter(p => {
         const punoIme = `${p.imeStudenta} ${p.prezimeStudenta}`.toLowerCase();
         const predmet = (p.vrstaTesta || "").toLowerCase();
-        return punoIme.includes(searchStudent.toLowerCase()) && 
-               predmet.includes(searchPredmet.toLowerCase());
+        return punoIme.includes(searchStudent.toLowerCase()) && predmet.includes(searchPredmet.toLowerCase());
     });
 
     const handlePotvrdiOcenu = async () => {
@@ -196,7 +206,7 @@ const Home = () => {
                     )}
                 </nav>
 
-                <p style={sectionLabelStyle}>{isStudent ? "MOJI PROJEKTI" : "STUDENTSKI RADOVI"}</p>
+                <p style={sectionLabelStyle}>{isStudent ? "MOJI PROJEKTI" : "PROJEKTI (KLIK ZA DETALJE)"}</p>
                 {isStudent && (
                     <button onClick={() => navigate('/create-project')} style={newProjectButtonStyle}>+ Novi projekat</button>
                 )}
@@ -204,10 +214,26 @@ const Home = () => {
                 {projekti.map(p => (
                     <div 
                         key={p.projekatID} 
-                        style={{...sidebarProjectItem, cursor: 'pointer'}} 
-                        onClick={() => navigate(`/projekat/${p.projekatID}`)}
+                        style={{...sidebarProjectItem, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}
+                        onClick={() => navigate(`/projekat/${p.projekatID}`)} 
                     >
-                        📄 {p.naziv}
+                        <span style={{flex: 1}}>📄 {p.naziv}</span>
+                        <span 
+                            onClick={(e) => {
+                                e.stopPropagation(); // OVO SPREČAVA DA ODE NA STRANICU KADA KLIKNEŠ NA DOWNLOAD
+                                handleDownloadPDF(p.projekatID, p.naziv);
+                            }} 
+                            style={{
+                                padding: '5px 8px',
+                                backgroundColor: '#e2e8f0',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                transition: '0.2s'
+                            }}
+                            title="Preuzmi PDF"
+                        >
+                            ⬇️
+                        </span>
                     </div>
                 ))}
             </div>
@@ -249,7 +275,6 @@ const Home = () => {
                             {sadrzaji.map(s => (
                                 <div key={s.sadrzajID} style={contentRowStyle}>
                                     <span style={{flex: 3, fontWeight: '600', fontSize: '18px'}}>{s.naziv}</span>
-                                    
                                     <span 
                                         style={{
                                             ...typeBadgeStyle, 
@@ -321,9 +346,6 @@ const scrollAreaStyle = { maxHeight: '70vh', overflowY: 'auto' };
 const submissionCardStyle = { padding: '25px', borderBottom: '1px solid #edf2f7' };
 const submissionHeaderStyle = { display: 'flex', justifyContent: 'space-between', marginBottom: '12px' };
 const studentNameStyle = { fontWeight: '700', fontSize: '18px' };
-const dateStyle = { fontSize: '14px', color: '#a0aec0' };
-const submissionBodyStyle = { backgroundColor: '#f7fafc', padding: '20px', borderRadius: '14px', marginBottom: '20px' };
-const preTextStyle = { whiteSpace: 'pre-wrap', fontSize: '15px', margin: 0 };
 const gradeButtonStyle = { width: '100%', padding: '15px', backgroundColor: '#3182ce', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '700', fontSize: '15px', cursor: 'pointer' };
 const ocenaBoxStyle = { backgroundColor: '#f0fff4', border: '1px solid #c6f6d5', padding: '15px', borderRadius: '12px', color: '#2f855a', textAlign: 'center' };
 const modalOverlayStyle = { position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 };
