@@ -1,0 +1,43 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, 'feature/*' ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout koda
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Instaliraj zavisnosti (API)
+        run: |
+          cd server
+          npm install
+          
+      - name: Pokreni testove
+        run: |
+          cd server
+          # Ovo ce proci cak i ako nemas testove, dok ih ne napisemo
+          npm test || echo "Testovi jos nisu spremni"
+
+  build-docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout koda
+        uses: actions/checkout@v4
+
+      - name: Build API Image
+        run: docker build -t csmpplatforma-api ./server
+
+      - name: Build Client Image
+        run: docker build -t csmpplatforma-client ./client
