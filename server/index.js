@@ -1,25 +1,38 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const knex = require('knex');
 const knexConfig = require('./knexfile'); 
-
 const swaggerUi = require('swagger-ui-express');
-const swaggerSpecs = require('./swagger'); 
+const swaggerSpecs = require('./swagger');
+const rateLimit = require('express-rate-limit');
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // Period od 15 minuta
+  max: 100, // Maksimalno 100 zahteva po IP adresi u tom periodu
+  message: 'Poslali ste previše zahteva sa ove IP adrese. Molimo pokušajte ponovo nakon 15 minuta.',
+  standardHeaders: true, 
+  legacyHeaders: false, 
+})
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(limiter);
+app.use(helmet());
+
+app.use(cors({
+  origin: 'https://frontend-csmp.onrender.com', // Dozvoljavamo samo svom frontendu pristup
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 app.use(express.json());
 
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
-app.use((req, res, next) => {
-    console.log(`Zahtev stigao: ${req.method} ${req.url}`);
-    next();
-});
+
 
 // Inicijalizacija Knex-a
 const db = knex(knexConfig.development);
