@@ -11,11 +11,11 @@ const cors = require('cors');
 const app = express();
 app.use(cors()); // Dozvoljava sve
 
-app.use(express.json());
+app.use(express.json()); //ovde bekend cita podetke koje smo uneli npr na formi
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // Period od 15 minuta
-  max: 100, // Maksimalno 100 zahteva po IP adresi u tom periodu
+  windowMs: 1 * 60 * 1000, // Period od 1 minuta
+  max: 500, // Maksimalno 500 zahteva po IP adresi u tom periodu
   message: 'Poslali ste previše zahteva sa ove IP adrese. Molimo pokušajte ponovo nakon 15 minuta.',
   standardHeaders: true, 
   legacyHeaders: false, 
