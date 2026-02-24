@@ -1,12 +1,17 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const helmet = require('helmet');
 const knex = require('knex');
 const knexConfig = require('./knexfile'); 
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./swagger');
 const rateLimit = require('express-rate-limit');
+const cors = require('cors');
+
+const app = express();
+app.use(cors()); // Dozvoljava sve
+
+app.use(express.json());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // Period od 15 minuta
@@ -16,37 +21,14 @@ const limiter = rateLimit({
   legacyHeaders: false, 
 })
 
-const app = express();
+
 const PORT = process.env.PORT || 5000;
 
 app.use(limiter);
 app.use(helmet());
 
-const allowedOrigins = [
-  'https://frontend-csmp.onrender.com',
-  'http://localhost:3000',
-  'http://localhost:5173'
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    // dozvoli i Postman / server-to-server (origin može biti undefined)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
-
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
-
-
 
 // Inicijalizacija Knex-a
 const db = knex(knexConfig.development);
