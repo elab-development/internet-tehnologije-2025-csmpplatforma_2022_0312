@@ -11,6 +11,7 @@ import MojiRadovi from './pages/MojiRadovi';
 import CreateSadrzaj from './pages/CreateSadrzaj';
 import Studenti from './pages/Studenti';
 import DetaljiProjekat from './pages/DetaljiProjekat';
+import Statistika from "./components/Statistika";
 
 function App() {
   return (
@@ -41,6 +42,8 @@ function App() {
           <Route path="/studenti" element={<Studenti />} />
 
           <Route path="/projekat/:id" element={<DetaljiProjekat />} />
+
+          <Route path="/statistika" element={<Statistika />} />
         </Routes>
       </div>
     </Router>

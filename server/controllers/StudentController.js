@@ -88,3 +88,19 @@ exports.updateStudentGrupa = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.getStudentProseci = async (req, res) => {
+    try {
+        const query = `
+            SELECT s.ime, s.prezime, AVG(o.vrednost) as prosecnaOcena
+            FROM student s
+            JOIN predaja p ON s.studentID = p.studentID
+            JOIN ocena o ON p.ocenaID = o.ocenaID
+            GROUP BY s.studentID
+        `;
+        const [rows] = await db.query(query);
+        res.status(200).json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
