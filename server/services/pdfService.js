@@ -67,7 +67,6 @@ const generateProjectPDF = async (naziv, opis, studentIme) => {
             console.error("Greška 402: Ostali ste bez kredita na PDFShift-u.");
         }
 
-        // Bacamo grešku dalje da bi Controller mogao da je obradi
         throw error;
     }
 };

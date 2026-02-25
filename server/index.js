@@ -9,7 +9,7 @@ const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 
 const app = express();
-app.use(cors()); // Dozvoljava sve
+app.use(cors()); 
 
 app.use(express.json()); //ovde bekend cita podetke koje smo uneli npr na formi
 
