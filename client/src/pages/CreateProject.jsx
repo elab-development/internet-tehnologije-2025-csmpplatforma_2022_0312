@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../config';
 
 const CreateProject = () => {
     const [naziv, setNaziv] = useState('');
@@ -19,8 +20,7 @@ const CreateProject = () => {
                 headers: { Authorization: token } 
             };
 
-            
-            await axios.post('http://localhost:5000/api/projekat/add', {
+            await axios.post(`${API_URL}/projekat/add`, {
                 naziv,
                 opis,
                 studentID: currentID,

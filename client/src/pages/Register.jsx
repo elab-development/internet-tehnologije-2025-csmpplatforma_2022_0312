@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import InputField from '../components/InputField';
 import CustomButton from '../components/CustomButton';
+import { API_URL } from '../config';
 
 const Register = () => {
     
@@ -30,7 +31,7 @@ const Register = () => {
                 adminID: admin.id 
             };
 
-            await axios.post('http://localhost:5000/api/student/register', finalData, {
+            await axios.post(`${API_URL}/student/register`, finalData, {
                 headers: { Authorization: token }
             });
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import InputField from '../components/InputField';
 import CustomButton from '../components/CustomButton';
+import { API_URL } from '../config';
 
 const RegistracijaN = () => {
     const [userData, setUserData] = useState({ 
@@ -29,7 +30,7 @@ const RegistracijaN = () => {
                 adminID: admin.id 
             };
 
-            await axios.post('http://localhost:5000/api/nastavnik/register', finalData, {
+            await axios.post(`${API_URL}/nastavnik/register`, finalData, {
                 headers: { Authorization: token }
             });
 
@@ -58,7 +59,7 @@ const RegistracijaN = () => {
                     <div style={{ fontSize: '18px', textAlign: 'left' }}>
                         <InputField label="Ime" name="ime" value={userData.ime} onChange={handleChange} placeholder="Ime nastavnika" />
                         <InputField label="Prezime" name="prezime" value={userData.prezime} onChange={handleChange} placeholder="Prezime nastavnika" />
-                        {/* Novo polje za email ispod prezimena */}
+                        
                         <InputField label="Email" name="email" type="email" value={userData.email} onChange={handleChange} placeholder="Email adresa nastavnika" />
                         <InputField label="Korisničko ime" name="username" value={userData.username} onChange={handleChange} placeholder="Username" />
                         <InputField label="Lozinka" type="password" name="password" value={userData.password} onChange={handleChange} placeholder="Lozinka" />
