@@ -10,7 +10,7 @@ const Statistika = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/student/statistika`);
+        const res = await axios.get(`${API_URL}/student/statistika`);
         if (res.data && Array.isArray(res.data)) {
           const formatted = [["Student", "Prosečna Ocena"]];
           res.data.forEach((item) => {
