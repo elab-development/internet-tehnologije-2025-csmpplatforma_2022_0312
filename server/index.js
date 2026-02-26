@@ -31,20 +31,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 const environment = process.env.NODE_ENV || 'development';
 const db = knex(knexConfig[environment]);
 
-/*if (process.env.NODE_ENV === 'production') {
-    db.migrate.latest()
-        .then(() => {
-            console.log('Migracije su uspešno izvršene!');
-          
-            return db.seed.run(); 
-        })
-        .then(() => {
-            console.log('Seederi su uspešno izvršeni!');
-        })
-        .catch((err) => {
-            console.error('Greška pri bazi (migracije/seederi):', err);
-        });
-}*/
+
 
 const connectWithRetry = () => {
     db.raw('SELECT 1')
