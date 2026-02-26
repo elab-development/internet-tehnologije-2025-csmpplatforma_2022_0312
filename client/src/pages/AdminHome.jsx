@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import CustomButton from '../components/CustomButton';
+import { API_URL } from '../config'; 
 
 const AdminHome = () => {
     const [studenti, setStudenti] = useState([]);
     const [nastavnici, setNastavnici] = useState([]);
-    
     
     const [searchStudent, setSearchStudent] = useState('');
     const [searchNastavnik, setSearchNastavnik] = useState('');
@@ -28,7 +28,8 @@ const AdminHome = () => {
                     headers: { Authorization: token },
                     params: { search: searchStudent } 
                 };
-                const res = await axios.get('http://localhost:5000/api/student/select', config);
+                
+                const res = await axios.get(`${API_URL}/student/select`, config);
                 setStudenti(res.data);
             } catch (err) {
                 console.error("Greška pri učitavanju studenata:", err);
@@ -46,7 +47,8 @@ const AdminHome = () => {
                     headers: { Authorization: token },
                     params: { search: searchNastavnik } 
                 };
-                const res = await axios.get('http://localhost:5000/api/nastavnik/select', config);
+                
+                const res = await axios.get(`${API_URL}/nastavnik/select`, config);
                 setNastavnici(res.data);
             } catch (err) {
                 console.error("Greška pri učitavanju nastavnika:", err);
@@ -61,7 +63,8 @@ const AdminHome = () => {
         if (window.confirm(`Da li ste sigurni da želite brisanje?`)) {
             try {
                 const token = localStorage.getItem('token');
-                await axios.delete(`http://localhost:5000/api/${tip}/delete/${id}`, {
+                
+                await axios.delete(`${API_URL}/${tip}/delete/${id}`, {
                     headers: { Authorization: token }
                 });
 
@@ -76,6 +79,7 @@ const AdminHome = () => {
             }
         }
     };
+
 
     
     const searchInputStyle = {

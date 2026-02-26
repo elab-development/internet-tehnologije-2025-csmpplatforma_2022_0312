@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 
 const CreateSadrzaj = () => {
     const [user] = useState(JSON.parse(localStorage.getItem('user')));
@@ -15,12 +16,11 @@ const CreateSadrzaj = () => {
     });
     const navigate = useNavigate();
 
-    
     useEffect(() => {
         const fetchGrupe = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await axios.get('http://localhost:5000/api/grupa/select', {
+                const res = await axios.get(`${API_URL}/grupa/select`, {
                     headers: { Authorization: token }
                 });
                 setSveGrupe(res.data);
@@ -48,14 +48,12 @@ const CreateSadrzaj = () => {
                 nastavnikID: user.nastavnikID
             };
 
-            
-            const resSadrzaj = await axios.post('http://localhost:5000/api/sadrzaj/add', dataToSend, {
+            const resSadrzaj = await axios.post(`${API_URL}/sadrzaj/add`, dataToSend, {
                 headers: { Authorization: token }
             });
 
-            
             if (formData.tip.toLowerCase() === 'grupni rad' && formData.grupaID) {
-                await axios.put(`http://localhost:5000/api/grupa/update/${formData.grupaID}`, 
+                await axios.put(`${API_URL}/grupa/update/${formData.grupaID}`, 
                     { sadrzajID: resSadrzaj.data.sadrzajID },
                     { headers: { Authorization: token } }
                 );
@@ -96,7 +94,6 @@ const CreateSadrzaj = () => {
                         />
                     </div>
 
-                    
                     {formData.tip.toLowerCase() === 'grupni rad' && (
                         <div style={inputGroupStyle}>
                             <label style={labelStyle}>Dodeli grupi</label>

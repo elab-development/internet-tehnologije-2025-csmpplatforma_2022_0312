@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import InputField from '../components/InputField';
 import CustomButton from '../components/CustomButton';
+import { API_URL } from '../config';
 
 const Login = () => {
     const [credentials, setCredentials] = useState({ username: '', password: '', kod: '' });
@@ -12,18 +13,16 @@ const Login = () => {
         setCredentials({ ...credentials, [e.target.name]: e.target.value });
     };
 
-    
     const handleLogin = async (e) => {
     e.preventDefault();
     try {
-        const res = await axios.post('http://localhost:5000/api/auth/login', credentials);
+        const res = await axios.post(`${API_URL}/auth/login`, credentials);
         
         console.log("Odgovor sa servera:", res.data);
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
         alert(res.data.message);
 
-        
         const userRole = res.data.user.role; 
 
         if (userRole === 'admin') {
@@ -50,8 +49,8 @@ const Login = () => {
         left: 0
     }}>
         <div style={{ 
-            width: '600px',       // Dodatno povećana širina
-            padding: '50px',      // Više prostora unutar forme
+            width: '600px',       
+            padding: '50px',      
             backgroundColor: 'white',
             borderRadius: '15px', 
             boxShadow: '0 15px 35px rgba(0,0,0,0.2)',

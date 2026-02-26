@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Chart } from "react-google-charts";
 import axios from "axios";
+import { API_URL } from '../config';
 
 const Statistika = () => {
   const [chartData, setChartData] = useState([]);
@@ -9,7 +10,7 @@ const Statistika = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/student/statistika");
+        const res = await axios.get(`${API_URL}/student/statistika`);
         if (res.data && Array.isArray(res.data)) {
           const formatted = [["Student", "Prosečna Ocena"]];
           res.data.forEach((item) => {

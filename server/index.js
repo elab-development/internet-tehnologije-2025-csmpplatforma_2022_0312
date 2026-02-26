@@ -9,34 +9,34 @@ const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 
 const app = express();
-app.use(cors()); 
+app.use(cors());
 
-app.use(express.json()); //ovde bekend cita podetke koje smo uneli npr na formi
+app.use(express.json());
 
 const limiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // Period od 1 minuta
-  max: 500, // Maksimalno 500 zahteva po IP adresi u tom periodu
+  windowMs: 1 * 60 * 1000,
+  max: 500,
   message: 'Poslali ste previše zahteva sa ove IP adrese. Molimo pokušajte ponovo nakon 15 minuta.',
   standardHeaders: true, 
   legacyHeaders: false, 
 })
-
 
 const PORT = process.env.PORT || 5000;
 
 app.use(limiter);
 app.use(helmet());
 
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
-// Inicijalizacija Knex-a
-const db = knex(knexConfig.development);
+const environment = process.env.NODE_ENV || 'development';
+const db = knex(knexConfig[environment]);
+
+
 
 const connectWithRetry = () => {
     db.raw('SELECT 1')
         .then(() => {
-            console.log(`Uspešno povezano na MySQL bazu (${process.env.DB_NAME})!`);
+            console.log(`Uspešno povezano na MySQL bazu u ${environment} modu!`);
         })
         .catch(err => {
             console.log("Greška pri povezivanju na bazu, pokušavam ponovo za 3 sekunde...");
@@ -45,7 +45,6 @@ const connectWithRetry = () => {
 };
 
 connectWithRetry();
-
 
 const studentRoutes = require('./routes/StudentRoutes');
 app.use('/api/student', studentRoutes);
@@ -77,5 +76,4 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server radi na portu: ${PORT}`);
-    console.log(`Swagger dokumentacija dostupna na: http://localhost:${PORT}/api-docs`);
 });

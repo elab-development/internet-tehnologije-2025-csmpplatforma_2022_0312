@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../config';
 
 const DetaljiProjekat = () => {
     const { id } = useParams();
@@ -15,7 +16,7 @@ const DetaljiProjekat = () => {
         const fetchProjekat = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await axios.get(`http://localhost:5000/api/projekat/${id}?tip=pojedinacno`, {
+                const res = await axios.get(`${API_URL}/projekat/${id}?tip=pojedinacno`, {
                     headers: { Authorization: token }
                 });
                 if (res.data) {
@@ -28,11 +29,10 @@ const DetaljiProjekat = () => {
         fetchProjekat();
     }, [id]);
 
-    // DODATA FUNKCIJA ZA DOWNLOAD PDF-a NA OVOJ STRANICI
     const handleDownloadPDF = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:5000/api/projekat/download/${id}`, {
+            const response = await axios.get(`${API_URL}/projekat/download/${id}`, {
                 headers: { Authorization: token },
                 responseType: 'blob'
             });
@@ -62,7 +62,6 @@ const DetaljiProjekat = () => {
             alert("Polja naziv i opis ne smeju biti prazna!");
             return;
         }
-        // Šaljemo naziv, opis I ime studenta za PDF
         payload = { 
             naziv: projekat.naziv, 
             opis: projekat.opis,
@@ -72,7 +71,7 @@ const DetaljiProjekat = () => {
 
     try {
         const token = localStorage.getItem('token');
-        await axios.put(`http://localhost:5000/api/projekat/update/${id}`, payload, {
+        await axios.put(`${API_URL}/projekat/update/${id}`, payload, {
             headers: { Authorization: token }
         });
         alert(isNastavnik ? "Feedback uspešno poslat!" : "Projekat i PDF uspešno ažurirani!");

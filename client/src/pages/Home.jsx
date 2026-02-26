@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { API_URL } from '../config';
 
 const Home = () => {
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
@@ -35,17 +36,17 @@ const Home = () => {
         try {
             const currentID = user.studentID;
             const projekatUrl = isStudent
-                ? `http://localhost:5000/api/projekat/${currentID}`
-                : `http://localhost:5000/api/projekat`;
+                ? `${API_URL}/projekat/${currentID}`
+                : `${API_URL}/projekat`;
             
             const resProjekti = await axios.get(projekatUrl, config);
             setProjekti(resProjekti.data);
 
-            const resSadrzaj = await axios.get('http://localhost:5000/api/sadrzaj/select', config);
+            const resSadrzaj = await axios.get(`${API_URL}/sadrzaj/select`, config);
             setSadrzaji(resSadrzaj.data);
 
             try {
-                const resSviTipovi = await axios.get('http://localhost:5000/api/sadrzaj/tipovi', {
+                const resSviTipovi = await axios.get(`${API_URL}/sadrzaj/tipovi`, {
                     headers: { Authorization: token }
                 });
                 const unikatni = Array.isArray(resSviTipovi.data) 
@@ -57,8 +58,8 @@ const Home = () => {
             }
 
             const predajeUrl = isStudent 
-                ? `http://localhost:5000/api/predaja/student/${user.studentID}`
-                : `http://localhost:5000/api/predaja/all`;
+                ? `${API_URL}/predaja/student/${user.studentID}`
+                : `${API_URL}/predaja/all`;
 
             const resPredaje = await axios.get(predajeUrl, config);
             setPredaje(resPredaje.data);
@@ -75,7 +76,7 @@ const Home = () => {
     const handleDownloadPDF = async (projekatID, naziv) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:5000/api/projekat/download/${projekatID}`, {
+            const response = await axios.get(`${API_URL}/projekat/download/${projekatID}`, {
                 headers: { Authorization: token },
                 responseType: 'blob' 
             });
@@ -139,12 +140,12 @@ const Home = () => {
         try {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: token } };
-            const resOcena = await axios.post('http://localhost:5000/api/ocena', {
+            const resOcena = await axios.post(`${API_URL}/ocena`, {
                 vrednost: parseInt(ocenaInput),
                 komentar: komentarInput
             }, config);
             const noviID = resOcena.data.ocenaID;
-            await axios.put(`http://localhost:5000/api/predaja/oceni/${selectedPredajaID}`, { ocenaID: noviID }, config);
+            await axios.put(`${API_URL}/predaja/oceni/${selectedPredajaID}`, { ocenaID: noviID }, config);
             alert("Uspešno ocenjeno!");
             setShowModal(false);
             setOcenaInput(''); setKomentarInput('');
@@ -220,7 +221,7 @@ const Home = () => {
                         <span style={{flex: 1}}>📄 {p.naziv}</span>
                         <span 
                             onClick={(e) => {
-                                e.stopPropagation(); // OVO SPREČAVA DA ODE NA STRANICU KADA KLIKNEŠ NA DOWNLOAD
+                                e.stopPropagation(); 
                                 handleDownloadPDF(p.projekatID, p.naziv);
                             }} 
                             style={{

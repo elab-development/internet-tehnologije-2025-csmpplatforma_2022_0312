@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 
 const MojiRadovi = () => {
     const [user] = useState(JSON.parse(localStorage.getItem('user')));
@@ -11,7 +12,7 @@ const MojiRadovi = () => {
         const fetchMojiRadovi = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await axios.get(`http://localhost:5000/api/predaja/student/${user.studentID}`, {
+                const res = await axios.get(`${API_URL}/predaja/student/${user.studentID}`, {
                     headers: { Authorization: token }
                 });
                 setRadovi(res.data);
@@ -30,8 +31,7 @@ const MojiRadovi = () => {
             </button>
             
             <h2 style={pageTitleStyle}>Moja istorija predaja</h2>
-            
-            
+                        
             <div style={listContainerStyle}>
                 {radovi.map(r => (
                     <div key={r.predajaID} style={workCardStyle}>

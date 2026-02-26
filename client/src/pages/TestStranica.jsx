@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../config';
 
 const TestStranica = () => {
     const { sadrzajID } = useParams();
@@ -14,7 +15,7 @@ const TestStranica = () => {
         const fetchTest = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await axios.get(`http://localhost:5000/api/sadrzaj/select?id=${sadrzajID}`, {
+                const res = await axios.get(`${API_URL}/sadrzaj/select?id=${sadrzajID}`, {
                     headers: { Authorization: token }
                 });
                 
@@ -65,7 +66,7 @@ const TestStranica = () => {
                 sadrzajRada: formatiraniOdgovori
             };
 
-            await axios.post('http://localhost:5000/api/predaja/submit', podaciZaSlanje, {
+            await axios.post(`${API_URL}/predaja/submit`, podaciZaSlanje, {
                 headers: { Authorization: token }
             });
 

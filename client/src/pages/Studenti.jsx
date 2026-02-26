@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 
 const Studenti = () => {
     const [user] = useState(JSON.parse(localStorage.getItem('user')));
@@ -20,10 +21,10 @@ const Studenti = () => {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: token } };
             
-            const resStudenti = await axios.get('http://localhost:5000/api/student/select', config);
+            const resStudenti = await axios.get(`${API_URL}/student/select`, config);
             setStudenti(resStudenti.data);
 
-            const resGrupe = await axios.get('http://localhost:5000/api/grupa/select', config);
+            const resGrupe = await axios.get(`${API_URL}/grupa/select`, config);
             setSveGrupe(resGrupe.data);
         } catch (err) {
             console.error(err);
@@ -44,7 +45,7 @@ const Studenti = () => {
         if (!selectedGrupaID) return alert("Izaberite grupu!");
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:5000/api/student/update-grupa/${selectedStudent.studentID}`, 
+            await axios.put(`${API_URL}/student/update-grupa/${selectedStudent.studentID}`, 
                 { grupaID: selectedGrupaID },
                 { headers: { Authorization: token } }
             );
@@ -60,7 +61,7 @@ const Studenti = () => {
         if (!novaGrupa.naziv || !novaGrupa.godina) return alert("Popunite sva polja!");
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/grupa/create', {
+            await axios.post(`${API_URL}/grupa/create`, {
                 naziv: novaGrupa.naziv,
                 godina: novaGrupa.godina,
                 nastavnikID: user.nastavnikID 
