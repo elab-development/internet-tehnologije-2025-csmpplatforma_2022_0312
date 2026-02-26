@@ -35,9 +35,14 @@ if (process.env.NODE_ENV === 'production') {
     db.migrate.latest()
         .then(() => {
             console.log('Migracije su uspešno izvršene!');
+          
+            return db.seed.run(); 
+        })
+        .then(() => {
+            console.log('Seederi su uspešno izvršeni!');
         })
         .catch((err) => {
-            console.error('Greška pri migracijama:', err);
+            console.error('Greška pri bazi (migracije/seederi):', err);
         });
 }
 
